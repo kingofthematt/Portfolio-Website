@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Matthew Lee - Cybersecurity Professional</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body data-theme="pinkcyan">
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <h2>ML</h2>
+            </div>
+            <ul class="nav-menu">
+                <li><a href="#home" class="nav-link">Home</a></li>
+                <li><a href="#quick-overview" class="nav-link">Quick Overview</a></li>
+                <li><a href="#proof-of-concept" class="nav-link">Proof of Concept</a></li>
+                <li><a href="/Projects/" class="nav-link">Projects</a></li>
+                <li><a href="#certifications" class="nav-link">Certifications</a></li>
+                
+                <li><a href="#education" class="nav-link">Education</a></li>
+                <li><a href="#contact" class="nav-link">Contact</a></li>
+            </ul>
+
+            <div class="hamburger">
+                <span class="bar"></span>
+                <span class="bar"></span>
+                <span class="bar"></span>
+            </div>
+        </div>
+    </nav>
+
+
+
+    <!-- Hero Section -->
+    <section id="home" class="hero">
+        <div class="hero-container">
+            <div class="hero-content">
+                <h1 class="hero-title">Matthew Lee</h1>
+                <p class="hero-subtitle">Matthewchlee00@gmail.com</p>
+                <p class="hero-description">
+                    Welcome to my personal website! I made this to demonstrate my skills in cybersecurity, web development, and digital rights management. The embedded video playing is a quick introduction to who I am. Feel free to play it and listen while you scroll through the rest of my portfolio to see the projects I've done.
+                </p>
+                <div class="hero-buttons">
+                    <a href="#contact" class="btn btn-primary">Get In Touch</a>
+                    <a href="#proof-of-concept" class="btn btn-secondary">View Proof of Concept</a>
+                </div>
+            </div>
+            <div class="hero-image">
+                <div class="video-container">
+                    <iframe
+                        class="video-embed"
+                        src="https://www.youtube.com/embed/hY7m5jjJ9mM?start=7&autoplay=1&mute=1&loop=1&playlist=hY7m5jjJ9mM&controls=0&showinfo=0&rel=0&modestbranding=1"
+                        frameborder="0"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        allowfullscreen>
+                    </iframe>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Proof of Concept Section -->
+    <section id="proof-of-concept" class="proof-of-concept">
+        <div class="container">
+            <h2 class="section-title">Proof of Concept</h2>
+
+            <div class="poc-content">
+                <div class="poc-intro">
+                    <div class="poc-hero-content">
+                        <div class="poc-text">
+                            <p class="poc-description">
+                                This website serves as a demonstration of my technical capabilities in web development, 
+                                network security, and digital rights management. It starts by you scanning the QR code on the images. You should see a pop up with a session ID and a message from me, the admin of this domain. The pictures are from when I had the opportunity to shadow and work for the owner of a company called Streamline! They work in ADA compliance, mainly helping small businesses align with these frameworks. It was there the owner taught me a little bit about web development and dared me to make a website for my portfolio! After being gifted the base knowledge and tools I needed to succeed, I accepted the challenge despite only having experience scripting with Python and PowerShell, never touching HTML, JavaScript, or CSS! This enabled me to learn more about those languages while also getting hands-on experiences with reverse proxies such as Ngrok and local hosting with Docker! 
+                            </p>
+                        </div>
+                        <div class="poc-image-demo">
+                            <h4>DRM Protection in Action:</h4>
+                            <p class="gallery-description">Professional networking event images - each protected with unique tracking</p>
+                            <div class="protected-gallery">
+                                <div class="protected-image-container">
+                                    <img id="mpic1" src="https://i.imgur.com/i1m7CxG.jpg" 
+                                    alt="Matthew at Professional Networking Event" class="protected-image">
+                                    <p class="image-caption">Dinner with the owner of Streamline</p>
+                                </div>
+                                <div class="protected-image-container">
+                                    <img id="mpic2" src="https://i.imgur.com/GsqvquE.jpg" 
+                                    alt="Matthew at Professional Event" class="protected-image">
+                                    <p class="image-caption">Professional networking event</p>
+                                </div>
+                                <div class="protected-image-container">
+                                    <img id="mpic3" src="https://i.imgur.com/P09lVCF.jpg" 
+                                    alt="Matthew at Business Dinner" class="protected-image">
+                                    <p class="image-caption">Business networking dinner</p>
+                                </div>
+                            </div>
+                            <p class="drm-notice">⚠️ All images are protected by digital rights management. Each has a QR code that reveals a protection message when scanned, which contains session ID, OS information, and a fun protection message. ⚠️</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="poc-side-by-side">
+                    <!-- DRM System - Left Side -->
+                    <div class="poc-left">
+                        <div class="poc-card">
+                            <div class="poc-header">
+                                <i class="fas fa-shield-alt"></i>
+                                <h3>Digital Rights Management (DRM) System</h3>
+                            </div>
+                            <div class="poc-content-inner">
+                                <h4>QR Code Image Protection System:</h4>
+                                <ol class="poc-steps">
+                                    <li><strong>QR Code Generation</strong>
+                                        <ul>
+                                            <li>Each image displays a QR code overlay</li>
+                                            <li>QR codes contain simple protection message</li>
+                                            <li>High-quality, scannable codes for all devices</li>
+                                        </ul>
+                                    </li>
+                                    <li><strong>Simple Protection Message</strong>
+                                        <ul>
+                                            <li>When scanned displays a message from the admin</li>
+                                            <li>Clear copyright warning for potential thieves</li>
+                                            <li>Professional deterrent without complexity</li>
+                                        </ul>
+                                    </li>
+                                    <li><strong>Technical Implementation</strong>
+                                        <ul>
+                                            <li>Uses QRious library for reliable QR generation</li>
+                                            <li>Responsive sizing for mobile and desktop</li>
+                                            <li>Clean overlay design with protection indicators</li>
+                                        </ul>
+                                    </li>
+                                </ol>
+                                <div class="poc-technical">
+                                    <h4>Technical Features:</h4>
+                                    <ul>
+                                        <li>✓ QRious library integration for QR code generation</li>
+                                        <li>✓ Clean overlay design with themed borders</li>
+                                        <li>✓ Protection indicators on each protected image</li>
+                                        <li>✓ Cross-device compatibility and testing</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Ngrok Project - Right Side -->
+                    <div class="poc-right">
+                        <div class="poc-card">
+                            <div class="poc-header">
+                                <i class="fas fa-network-wired"></i>
+                                <h3>Ngrok Tunneling & Network Security</h3>
+                            </div>
+                            <div class="poc-content-inner">
+                                <h4>Advanced Network Infrastructure Implementation:</h4>
+                                <ol class="poc-steps">
+                                    <li><strong>Secure Tunnel Configuration</strong>
+                                        <ul>
+                                            <li>Ngrok HTTP tunneling for secure external access</li>
+                                            <li>Custom domain configuration with SSL termination</li>
+                                            <li>Port forwarding and protocol handling</li>
+                                            <li>Real-time connection monitoring and logging</li>
+                                        </ul>
+                                    </li>
+                                    <li><strong>Network Security Features</strong>
+                                        <ul>
+                                            <li>HTTPS enforcement with automatic SSL certificates</li>
+                                            <li>IP whitelisting and access control</li>
+                                            <li>Traffic encryption and secure data transmission</li>
+                                        </ul>
+                                    </li>
+                                    <li><strong>Deployment & Management</strong>
+                                        <ul>
+                                            <li>Automated tunnel startup and configuration</li>
+                                                                                    <li>Dynamic port allocation and management</li>
+                                        <li>Connection health monitoring and alerts</li>
+                                    </ul>
+                                </li>
+                            </ul>
+                        </div>
+                        
+                        <div class="poc-technical">
+                            <h4>Technical Implementation Details:</h4>
+                            <ul>
+                                <li>✓ Manage and start an Ngrok reverse proxy server</li>
+                                <li>✓ Custom authentication and access control</li>
+                                <li>✓ Rate limiting and DDoS protection</li>
+                            </ul>
+                        </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="poc-footer">
+                    <div class="poc-stats">
+                        <div class="stat-item">
+                            <i class="fas fa-code"></i>
+                            <div>
+                                <h4>Lines of Code</h4>
+                                <p>~500+ (HTML, CSS, JS)</p>
+                            </div>
+                        </div>
+                        <div class="stat-item">
+                            <i class="fas fa-server"></i>
+                            <div>
+                                <h4>Deployment Method</h4>
+                                <p>Ngrok Tunneling</p>
+                            </div>
+                        </div>
+                        <div class="stat-item">
+                            <i class="fas fa-lock"></i>
+                            <div>
+                                <h4>Security Features</h4>
+                                <p>DRM + QR Protection</p>
+                            </div>
+                        </div>
+                        <div class="stat-item">
+                            <i class="fas fa-mobile-alt"></i>
+                            <div>
+                                <h4>Responsive Design</h4>
+                                <p>Mobile Optimized</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Quick Professional Overview Section -->
+    <section id="quick-overview" class="quick-overview">
+        <div class="container">
+            <h2 class="section-title">Quick Professional Overview</h2>
+            <div class="overview-grid">
+                <div class="overview-card">
+                    <div class="overview-header">
+                        <h3>Security Consultant</h3>
+                    </div>
+                    <span class="company">Royal Guards</span>
+                    <span class="duration">August 2022 - January 2025</span>
+                    <p class="overview-summary">Managed SSH and PowerShell operations for Domain Controller administration, developed incident report protocols, and conducted daily compliance audits.</p>
+                </div>
+
+                <div class="overview-card">
+                    <div class="overview-header">
+                        <h3>Project Manager</h3>
+                    </div>
+                    <span class="company">Beez Garage Doors</span>
+                    <span class="duration">June 2022 - June 2023</span>
+                    <p class="overview-summary">Provided technical customer support, managed CRM systems, and coordinated project timelines and resource allocation.</p>
+                </div>
+
+                <div class="overview-card">
+                    <div class="overview-header">
+                        <h3>Account Manager</h3>
+                    </div>
+                    <span class="company">Ion Solar</span>
+                    <span class="duration">December 2021 - February 2022</span>
+                    <p class="overview-summary">Managed DocuSign loan processing, created data aggregation reports with heat maps and ROI analysis, and utilized Salesforce CRM.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+
+
+    <!-- Certifications Section -->
+    <section id="certifications" class="certifications">
+        <div class="container">
+            <h2 class="section-title">Certifications</h2>
+            <div class="cert-grid">
+                <div class="cert-card">
+                    <div class="cert-icon">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                    <h3>CompTIA Security+</h3>
+                    <p>Industry-recognized cybersecurity certification demonstrating base level core security skills.</p>
+                </div>
+                <div class="cert-card">
+                    <div class="cert-icon">
+                        <i class="fab fa-google"></i>
+                    </div>
+                    <h3>Google Cybersecurity</h3>
+                    <p>Comprehensive cybersecurity program covering threat detection and response. One of the best hands on labs with tools you use everyday in cybersecurity!</p>
+                </div>
+                <div class="cert-card">
+                    <div class="cert-icon">
+                        <i class="fab fa-python"></i>
+                    </div>
+                    <h3>Python/Linux</h3>
+                    <p>Proficiency in Python programming and Linux system administration</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Education Section -->
+    <section id="education" class="education">
+        <div class="container">
+            <h2 class="section-title">Education & Achievements</h2>
+            <div class="education-content">
+                <div class="education-main">
+                    <h3>Arizona State University</h3>
+                    <p class="institution">2019 - 2020 - 30 credits</p>
+                    <h3>Associate of Science</h3>
+                    <p class="institution">Clackamas Community College - 2018 - 2019</p>
+                </div>
+                
+                <div class="achievements">
+                    <h3>Athletic Achievements</h3>
+                    <div class="achievement-grid">
+                        <div class="achievement-item">
+                            <i class="fas fa-trophy"></i>
+                            <div>
+                                <h4>Two-Time State Champion</h4>
+                                <p>Wrestling at Milwaukie High School</p>
+                            </div>
+                        </div>
+                        <div class="achievement-item">
+                            <i class="fas fa-medal"></i>
+                            <div>
+                                <h4>Two-Time State Runner-Up</h4>
+                                <p>Wrestling at Milwaukie High School</p>
+                            </div>
+                        </div>
+                        <div class="achievement-item">
+                            <i class="fas fa-users"></i>
+                            <div>
+                                <h4>College Wrestling</h4>
+                                <p>Arizona State University & Clackamas Community College</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section id="contact" class="contact">
+        <div class="container">
+            <h2 class="section-title">Get In Touch</h2>
+            <div class="contact-content-centered">
+                <div class="contact-info-centered">
+                    <div class="contact-item">
+                        <i class="fas fa-envelope"></i>
+                        <div>
+                            <h3>Email</h3>
+                            <p><a href="mailto:Matthewchlee00@gmail.com">Matthewchlee00@gmail.com</a></p>
+                        </div>
+                    </div>
+                    <div class="contact-item">
+                        <i class="fas fa-phone"></i>
+                        <div>
+                            <h3>Phone</h3>
+                            <p><a href="tel:503-849-4290">(503) 849-4290</a></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2024 Matthew Christopher Lee. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html> 

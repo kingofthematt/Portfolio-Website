@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Projects - Matthew Christopher Lee</title>
+    <style>
+        /* Purple Theme Variables */
+        :root {
+            --purple-bg: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --purple-card: rgba(255, 255, 255, 0.95);
+            --purple-text: #2d3748;
+            --purple-accent: #667eea;
+            --purple-shadow: rgba(102, 126, 234, 0.3);
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: var(--purple-bg);
+            min-height: 100vh;
+            transition: all 0.5s ease;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            position: relative;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 50px;
+            color: white;
+        }
+
+        .header h1 {
+            font-size: 3.5rem;
+            margin-bottom: 15px;
+            text-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            font-weight: 700;
+        }
+
+        .header p {
+            font-size: 1.3rem;
+            opacity: 0.9;
+            font-weight: 300;
+        }
+
+        .projects-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 25px;
+            margin-bottom: 50px;
+        }
+
+        .project-box {
+            background: var(--purple-card);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 15px 35px var(--purple-shadow);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.4s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .project-box::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: var(--purple-bg);
+            transform: scaleX(0);
+            transition: transform 0.4s ease;
+        }
+
+        .project-box:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 25px 50px var(--purple-shadow);
+        }
+
+        .project-box:hover::before {
+            transform: scaleX(1);
+        }
+
+        .project-title {
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: var(--purple-text);
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .project-description {
+            color: #4a5568;
+            line-height: 1.7;
+            margin-bottom: 20px;
+            font-size: 1rem;
+        }
+
+        .project-tech {
+            margin-bottom: 20px;
+        }
+
+        .tech-tag {
+            display: inline-block;
+            background: var(--purple-bg);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            margin: 3px;
+            font-weight: 500;
+            box-shadow: 0 2px 8px var(--purple-shadow);
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 15px 25px;
+            text-decoration: none;
+            border-radius: 25px;
+            margin-bottom: 30px;
+            font-weight: 600;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .back-link:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateX(-5px);
+        }
+
+        @media (max-width: 768px) {
+            .header h1 { font-size: 2.5rem; }
+            .projects-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+
+    <div class="container">
+        <a href="../" class="back-link">← Back to Portfolio</a>
+        
+        <div class="header">
+            <h1>My Projects</h1>
+            <p>Cybersecurity and Development Portfolio - 3 Core Projects</p>
+        </div>
+
+
+
+        <div class="projects-grid">
+            <!-- Project 1: DRM Protection System -->
+            <div class="project-box">
+                <div class="project-title">🛡️ DRM Protection System</div>
+                <div class="project-description">
+                    Created a QR code with a data matrix that allows me to scan it and get metadata of the session ID and OS of the person who leaked the image. This provides forensic tracking capabilities for digital asset protection.
+                </div>
+                <div class="project-tech">
+                    <span class="tech-tag">JavaScript</span>
+                    <span class="tech-tag">QR Codes</span>
+                    <span class="tech-tag">Digital Forensics</span>
+                    <span class="tech-tag">Data Matrix</span>
+                </div>
+            </div>
+
+
+            <!-- Project 3: Portfolio Website -->
+            <div class="project-box">
+                <div class="project-title">💻 Portfolio Website</div>
+                <div class="project-description">
+                    Created a website from scratch using HTML, CSS, and JavaScript. Hosted it locally using Docker and used reverse proxies, such as Ngrok, to allow for the ability to test it on multiple other devices both locally and remotely! Since I am the admin, I can monitor network traffic and see who visits my site from logs.
+                </div>
+                <div class="project-tech">
+                    <span class="tech-tag">HTML5</span>
+                    <span class="tech-tag">CSS3</span>
+                    <span class="tech-tag">JavaScript</span>
+                    <span class="tech-tag">Docker</span>
+                    <span class="tech-tag">Ngrok</span>
+                    <span class="tech-tag">Logs</span>
+                    <span class="tech-tag">Network Traffic</span>
+                    <span class="tech-tag">Reverse Proxies</span>
+                </div>
+            </div>
+
+            <!-- Project 4: Penetration Testing -->
+            <div class="project-box">
+                <div class="project-title">🐛 Penetration Testing</div>
+                <div class="project-description">
+                    Used Windows exploits such as the utility man hack to change the utility function on the password screen to allow root access in PowerShell to be able to change the password without knowing the password. If someone had a BIOS password, this wouldn't work; however, most people don't use one! Another local hack I've done requires a USB with bare-bones Windows 10 installed. After loading into the BIOS and using the command "diskpart clean" on the SSD to wipe a hard drive entirely of its data. This is a very common way criminals clear a device completely to be able to access and sell it again!
+                </div>
+                <div class="project-tech">
+                    <span class="tech-tag">Windows</span>
+                    <span class="tech-tag">PowerShell</span>
+                    <span class="tech-tag">Privilege Escalation</span>
+                </div>
+            </div>
+        </div>
+
+        <div style="text-align: center; color: #666; margin-top: 40px;">
+            <p>More projects coming soon...</p>
+        </div>
+    </div>
+
+
+</body>
+</html> 
