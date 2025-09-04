@@ -744,20 +744,20 @@ ul li, ol li {
     background: unset !important;
 }
 
-/* Force QR code canvas size - doubled for much better scanning */
+/* Force QR code canvas size - 30% bigger for better mobile scanning */
 .protected-image-container .overlay canvas {
-    width: 312px !important;
-    height: 312px !important;
-    max-width: 312px !important;
-    max-height: 312px !important;
+    width: 156px !important;
+    height: 156px !important;
+    max-width: 156px !important;
+    max-height: 156px !important;
 }
 
 @media (max-width: 768px) {
     .protected-image-container .overlay canvas {
-        width: 208px !important;
-        height: 208px !important;
-        max-width: 208px !important;
-        max-height: 208px !important;
+        width: 104px !important;
+        height: 104px !important;
+        max-width: 104px !important;
+        max-height: 104px !important;
     }
 }
 
