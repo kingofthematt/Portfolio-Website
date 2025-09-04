@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QR Code Visit Information - Matthew Lee</title>
+    <link rel="stylesheet" href="../styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        .qr-info-container {
+            min-height: 100vh;
+            background: var(--primary-gradient);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+        
+        .qr-info-card {
+            background: white;
+            border-radius: 20px;
+            padding: 3rem;
+            max-width: 600px;
+            width: 100%;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+        
+        .qr-info-header {
+            margin-bottom: 2rem;
+        }
+        
+        .qr-info-header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 1rem;
+        }
+        
+        .qr-info-header p {
+            font-size: 1.2rem;
+            color: #6b7280;
+            margin-bottom: 0;
+        }
+        
+        .info-list {
+            list-style: none;
+            padding: 0;
+            margin: 2rem 0;
+        }
+        
+        .info-item {
+            background: #f8fafc;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            border-left: 4px solid var(--accent-color);
+            text-align: left;
+        }
+        
+        .info-item strong {
+            color: var(--accent-color);
+            font-weight: 600;
+        }
+        
+        .info-item .value {
+            color: #1f2937;
+            font-weight: 500;
+            margin-top: 0.5rem;
+            display: block;
+        }
+        
+        .back-button {
+            background: var(--primary-gradient);
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-block;
+            margin-top: 2rem;
+            transition: all 0.3s ease;
+        }
+        
+        .back-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px var(--primary-shadow);
+        }
+        
+        .loading {
+            color: #6b7280;
+            font-style: italic;
+        }
+        
+        .error {
+            color: #dc2626;
+            background: #fef2f2;
+            border-left-color: #dc2626;
+        }
+    </style>
+</head>
+<body>
+    <div class="qr-info-container">
+        <div class="qr-info-card">
+            <div class="qr-info-header">
+                <h1>🔍 Here is what we learned about your visit</h1>
+                <p>Digital forensics in action - this is how we protect our content!</p>
+            </div>
+            
+            <ul class="info-list">
+                <li class="info-item">
+                    <strong>1. You use this browser:</strong>
+                    <span class="value" id="browser-info">Detecting...</span>
+                </li>
+                
+                <li class="info-item">
+                    <strong>2. You are from:</strong>
+                    <span class="value" id="location-info">Detecting location...</span>
+                </li>
+                
+                <li class="info-item">
+                    <strong>3. Session ID:</strong>
+                    <span class="value" id="session-info">Loading...</span>
+                </li>
+                
+                <li class="info-item">
+                    <strong>4. Visit Time:</strong>
+                    <span class="value" id="time-info">Loading...</span>
+                </li>
+                
+                <li class="info-item">
+                    <strong>5. Device Type:</strong>
+                    <span class="value" id="device-info">Detecting...</span>
+                </li>
+            </ul>
+            
+            <a href="../index.html" class="back-button">
+                <i class="fas fa-arrow-left"></i> Back to Portfolio
+            </a>
+        </div>
+    </div>
+
+    <script>
+        // Get URL parameters
+        function getUrlParameter(name) {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get(name);
+        }
+
+        // Browser detection
+        function detectBrowser() {
+            const userAgent = navigator.userAgent;
+            let browserName = "Unknown Browser";
+            
+            if (userAgent.includes("Chrome") && !userAgent.includes("Edg")) {
+                browserName = "Google Chrome";
+            } else if (userAgent.includes("Firefox")) {
+                browserName = "Mozilla Firefox";
+            } else if (userAgent.includes("Safari") && !userAgent.includes("Chrome")) {
+                browserName = "Safari";
+            } else if (userAgent.includes("Edg")) {
+                browserName = "Microsoft Edge";
+            } else if (userAgent.includes("Opera") || userAgent.includes("OPR")) {
+                browserName = "Opera";
+            }
+            
+            return browserName;
+        }
+
+        // Device detection
+        function detectDevice() {
+            const userAgent = navigator.userAgent;
+            if (/Android/i.test(userAgent)) {
+                return "Android Device";
+            } else if (/iPhone|iPad|iPod/i.test(userAgent)) {
+                return "iOS Device";
+            } else if (/Windows/i.test(userAgent)) {
+                return "Windows Computer";
+            } else if (/Mac/i.test(userAgent)) {
+                return "Mac Computer";
+            } else if (/Linux/i.test(userAgent)) {
+                return "Linux Computer";
+            } else {
+                return "Unknown Device";
+            }
+        }
+
+        // IP Geolocation using a free service
+        async function getLocationInfo() {
+            try {
+                const response = await fetch('https://ipapi.co/json/');
+                const data = await response.json();
+                
+                if (data.city && data.region) {
+                    return `${data.city}, ${data.region}`;
+                } else if (data.country) {
+                    return data.country;
+                } else {
+                    return "Location unavailable";
+                }
+            } catch (error) {
+                console.error('Location detection failed:', error);
+                return "Location detection failed";
+            }
+        }
+
+        // Initialize page
+        async function initializePage() {
+            // Get session ID from URL
+            const sessionId = getUrlParameter('session') || 'No session ID provided';
+            document.getElementById('session-info').textContent = sessionId;
+            
+            // Set visit time
+            const visitTime = new Date().toLocaleString();
+            document.getElementById('time-info').textContent = visitTime;
+            
+            // Get browser from URL parameter or detect it
+            const urlBrowser = getUrlParameter('browser');
+            const browser = urlBrowser ? decodeURIComponent(urlBrowser) : detectBrowser();
+            document.getElementById('browser-info').textContent = browser;
+            
+            // Detect device
+            const device = detectDevice();
+            document.getElementById('device-info').textContent = device;
+            
+            // Get location
+            const location = await getLocationInfo();
+            document.getElementById('location-info').textContent = location;
+            
+            // Log the visit for demonstration
+            console.log('🔍 QR Code Visit Detected:', {
+                session: sessionId,
+                browser: browser,
+                device: device,
+                location: location,
+                time: visitTime,
+                image: getUrlParameter('image') || 'Unknown',
+                platform: getUrlParameter('platform') ? decodeURIComponent(getUrlParameter('platform')) : 'Unknown'
+            });
+        }
+
+        // Start when page loads
+        document.addEventListener('DOMContentLoaded', initializePage);
+    </script>
+</body>
+</html>

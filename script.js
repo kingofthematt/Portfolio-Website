@@ -169,8 +169,12 @@ window.addEventListener('scroll', () => {
         const userAgent = navigator.userAgent;
         const platform = navigator.platform;
         
-        // Create QR code with simplified message
-        const qrMessage = `Hire me pls\n\nIP: ${navigator.userAgent.includes('Chrome') ? 'Chrome' : navigator.userAgent.includes('Firefox') ? 'Firefox' : 'Browser'}\nSession: ${sessionId}`;
+        // Create dynamic QR code URL that leads to personalized page
+        const baseUrl = window.location.origin;
+        const qrInfoUrl = `${baseUrl}/qr-info/?session=${sessionId}&image=${imageId}&platform=${encodeURIComponent(platform)}&browser=${encodeURIComponent(navigator.userAgent.includes('Chrome') ? 'Chrome' : navigator.userAgent.includes('Firefox') ? 'Firefox' : 'Browser')}&useragent=${encodeURIComponent(userAgent)}`;
+        
+        // QR code message - now a URL instead of text
+        const qrMessage = qrInfoUrl;
         
         // Smaller QR codes for better scanning
         const isMobile = window.innerWidth <= 768;
@@ -178,13 +182,13 @@ window.addEventListener('scroll', () => {
         
         const qr = new QRious({
             value: qrMessage,
-            size: 65, // 30% bigger than 50px for better mobile scanning
+            size: 130, // Doubled from 65px for much better scanning
             foreground: '#000000',
             background: '#ffffff',
             level: 'H' // High error correction for better scanning
         });
         
-        console.log(`🔍 QR Code generated with size: 65px, actual canvas: ${qr.canvas.width}x${qr.canvas.height}`);
+        console.log(`🔍 QR Code generated with size: 130px, actual canvas: ${qr.canvas.width}x${qr.canvas.height}`);
         
         // Create overlay container with progressive difficulty
         const overlay = document.createElement('div');
@@ -233,20 +237,20 @@ window.addEventListener('scroll', () => {
         qr.canvas.style.maxWidth = '100%';
         qr.canvas.style.height = 'auto';
         
-        // Responsive sizing - 30% bigger for better mobile scanning
+        // Responsive sizing - doubled for much better scanning
         if (window.innerWidth < 768) {
-            qr.canvas.style.width = '104px';  // 30% bigger than 80px
-            qr.canvas.style.height = '104px';
-            console.log(`📱 Mobile: Setting QR size to 104x104px for ${imageId}`);
+            qr.canvas.style.width = '208px';  // Doubled from 104px
+            qr.canvas.style.height = '208px';
+            console.log(`📱 Mobile: Setting QR size to 208x208px for ${imageId}`);
         } else {
-            qr.canvas.style.width = '156px';  // 30% bigger than 120px
-            qr.canvas.style.height = '156px';
-            console.log(`🖥️ Desktop: Setting QR size to 156x156px for ${imageId}`);
+            qr.canvas.style.width = '312px';  // Doubled from 156px
+            qr.canvas.style.height = '312px';
+            console.log(`🖥️ Desktop: Setting QR size to 312x312px for ${imageId}`);
         }
         
         // Force canvas size with !important
-        qr.canvas.style.setProperty('width', window.innerWidth < 768 ? '104px' : '156px', 'important');
-        qr.canvas.style.setProperty('height', window.innerWidth < 768 ? '104px' : '156px', 'important');
+        qr.canvas.style.setProperty('width', window.innerWidth < 768 ? '208px' : '312px', 'important');
+        qr.canvas.style.setProperty('height', window.innerWidth < 768 ? '208px' : '312px', 'important');
         
         overlay.appendChild(qr.canvas);
         
@@ -291,7 +295,10 @@ window.addEventListener('scroll', () => {
                 const difficulty = container.dataset.difficulty;
                 
                 if (imageId && difficulty) {
-                    const qrMessage = `Hire me pls\n\nIP: ${navigator.userAgent.includes('Chrome') ? 'Chrome' : navigator.userAgent.includes('Firefox') ? 'Firefox' : 'Browser'}\nSession: ${Date.now()}`;
+                    const baseUrl = window.location.origin;
+                    const newSessionId = 'MCL_' + Date.now().toString(36) + '_' + Math.random().toString(36).substr(2, 9);
+                    const qrInfoUrl = `${baseUrl}/qr-info/?session=${newSessionId}&image=${imageId}&platform=${encodeURIComponent(navigator.platform)}&browser=${encodeURIComponent(navigator.userAgent.includes('Chrome') ? 'Chrome' : navigator.userAgent.includes('Firefox') ? 'Firefox' : 'Browser')}&useragent=${encodeURIComponent(navigator.userAgent)}`;
+                    const qrMessage = qrInfoUrl;
                     
                     const newQr = new QRious({
                         value: qrMessage,
@@ -335,11 +342,11 @@ window.addEventListener('scroll', () => {
                             const canvas = overlay.querySelector('canvas');
                             if (canvas) {
                                 if (isMobile) {
-                                    canvas.style.width = '104px';
-                                    canvas.style.height = '104px';
+                                    canvas.style.width = '208px';
+                                    canvas.style.height = '208px';
                                 } else {
-                                    canvas.style.width = '156px';
-                                    canvas.style.height = '156px';
+                                    canvas.style.width = '312px';
+                                    canvas.style.height = '312px';
                                 }
                             }
                             
