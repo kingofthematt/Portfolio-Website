@@ -112,18 +112,18 @@ window.addEventListener('scroll', () => {
     function initializeDRM() {
         console.log('📱 DOM loaded, initializing DRM...');
         
-        // Load QR.js library from CDN
-        const script = document.createElement('script');
-        script.src = 'https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js';
-        script.onload = function() {
+    // Load QR.js library from CDN
+    const script = document.createElement('script');
+    script.src = 'https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js';
+    script.onload = function() {
             console.log('✅ QRious library loaded successfully');
             // Wait a bit more to ensure images are loaded
             setTimeout(generateSimpleDRMOverlay, 1000);
-        };
-        script.onerror = function() {
+    };
+    script.onerror = function() {
             console.error('❌ Failed to load QR.js library');
-        };
-        document.head.appendChild(script);
+    };
+    document.head.appendChild(script);
     }
     
     function generateSimpleDRMOverlay() {
@@ -145,7 +145,7 @@ window.addEventListener('scroll', () => {
                 console.log(`✅ Found ${imageConfig.id}, applying ${imageConfig.difficulty} difficulty...`);
                 // Protect this specific image with progressive difficulty
                 protectSingleImage(targetImg, imageConfig.id, imageConfig.difficulty);
-                protectedCount++;
+            protectedCount++;
             } else {
                 console.log(`❌ Image ${imageConfig.id} not found in DOM`);
             }
@@ -169,9 +169,30 @@ window.addEventListener('scroll', () => {
         const userAgent = navigator.userAgent;
         const platform = navigator.platform;
         
+        // Enhanced browser detection for QR URL
+        function detectBrowserForQR() {
+            const userAgent = navigator.userAgent;
+            if (userAgent.includes("Safari") && !userAgent.includes("Chrome") && !userAgent.includes("Edg")) {
+                return "Safari";
+            } else if (userAgent.includes("Chrome") && !userAgent.includes("Edg")) {
+                return "Google Chrome";
+            } else if (userAgent.includes("Firefox")) {
+                return "Mozilla Firefox";
+            } else if (userAgent.includes("Edg")) {
+                return "Microsoft Edge";
+            } else if (userAgent.includes("Opera") || userAgent.includes("OPR")) {
+                return "Opera";
+            } else if (userAgent.includes("Trident") || userAgent.includes("MSIE")) {
+                return "Internet Explorer";
+            } else {
+                return "Unknown Browser";
+            }
+        }
+        
         // Create dynamic QR code URL that leads to personalized page
         const baseUrl = window.location.origin;
-        const qrInfoUrl = `${baseUrl}/qr-info/?session=${sessionId}&image=${imageId}&platform=${encodeURIComponent(platform)}&browser=${encodeURIComponent(navigator.userAgent.includes('Chrome') ? 'Chrome' : navigator.userAgent.includes('Firefox') ? 'Firefox' : 'Browser')}&useragent=${encodeURIComponent(userAgent)}`;
+        const detectedBrowser = detectBrowserForQR();
+        const qrInfoUrl = `${baseUrl}/qr-info/?session=${sessionId}&image=${imageId}&platform=${encodeURIComponent(platform)}&browser=${encodeURIComponent(detectedBrowser)}&useragent=${encodeURIComponent(userAgent)}`;
         
         // QR code message - now a URL instead of text
         const qrMessage = qrInfoUrl;
@@ -297,7 +318,29 @@ window.addEventListener('scroll', () => {
                 if (imageId && difficulty) {
                     const baseUrl = window.location.origin;
                     const newSessionId = 'MCL_' + Date.now().toString(36) + '_' + Math.random().toString(36).substr(2, 9);
-                    const qrInfoUrl = `${baseUrl}/qr-info/?session=${newSessionId}&image=${imageId}&platform=${encodeURIComponent(navigator.platform)}&browser=${encodeURIComponent(navigator.userAgent.includes('Chrome') ? 'Chrome' : navigator.userAgent.includes('Firefox') ? 'Firefox' : 'Browser')}&useragent=${encodeURIComponent(navigator.userAgent)}`;
+                    
+                    // Use the same enhanced browser detection
+                    function detectBrowserForResize() {
+                        const userAgent = navigator.userAgent;
+                        if (userAgent.includes("Safari") && !userAgent.includes("Chrome") && !userAgent.includes("Edg")) {
+                            return "Safari";
+                        } else if (userAgent.includes("Chrome") && !userAgent.includes("Edg")) {
+                            return "Google Chrome";
+                        } else if (userAgent.includes("Firefox")) {
+                            return "Mozilla Firefox";
+                        } else if (userAgent.includes("Edg")) {
+                            return "Microsoft Edge";
+                        } else if (userAgent.includes("Opera") || userAgent.includes("OPR")) {
+                            return "Opera";
+                        } else if (userAgent.includes("Trident") || userAgent.includes("MSIE")) {
+                            return "Internet Explorer";
+                        } else {
+                            return "Unknown Browser";
+                        }
+                    }
+                    
+                    const detectedBrowser = detectBrowserForResize();
+                    const qrInfoUrl = `${baseUrl}/qr-info/?session=${newSessionId}&image=${imageId}&platform=${encodeURIComponent(navigator.platform)}&browser=${encodeURIComponent(detectedBrowser)}&useragent=${encodeURIComponent(navigator.userAgent)}`;
                     const qrMessage = qrInfoUrl;
                     
                     const newQr = new QRious({

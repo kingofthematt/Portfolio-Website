@@ -152,21 +152,34 @@
             return urlParams.get(name);
         }
 
-        // Browser detection
+        // Enhanced browser detection
         function detectBrowser() {
             const userAgent = navigator.userAgent;
             let browserName = "Unknown Browser";
             
-            if (userAgent.includes("Chrome") && !userAgent.includes("Edg")) {
-                browserName = "Google Chrome";
-            } else if (userAgent.includes("Firefox")) {
-                browserName = "Mozilla Firefox";
-            } else if (userAgent.includes("Safari") && !userAgent.includes("Chrome")) {
+            // Check for Safari first (before Chrome, since Chrome includes Safari in user agent)
+            if (userAgent.includes("Safari") && !userAgent.includes("Chrome") && !userAgent.includes("Edg")) {
                 browserName = "Safari";
-            } else if (userAgent.includes("Edg")) {
+            } 
+            // Check for Chrome (but not Edge, since Edge includes Chrome in user agent)
+            else if (userAgent.includes("Chrome") && !userAgent.includes("Edg")) {
+                browserName = "Google Chrome";
+            } 
+            // Check for Firefox
+            else if (userAgent.includes("Firefox")) {
+                browserName = "Mozilla Firefox";
+            } 
+            // Check for Edge (before Chrome check since Edge includes Chrome)
+            else if (userAgent.includes("Edg")) {
                 browserName = "Microsoft Edge";
-            } else if (userAgent.includes("Opera") || userAgent.includes("OPR")) {
+            } 
+            // Check for Opera
+            else if (userAgent.includes("Opera") || userAgent.includes("OPR")) {
                 browserName = "Opera";
+            }
+            // Check for Internet Explorer
+            else if (userAgent.includes("Trident") || userAgent.includes("MSIE")) {
+                browserName = "Internet Explorer";
             }
             
             return browserName;
