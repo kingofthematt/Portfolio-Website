@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="theme-color" content="#0b0d12">
     <title>Ride or Die — A Car Ride Card Game</title>
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230b0d12'/%3E%3Cellipse cx='16' cy='16' rx='9' ry='6.5' fill='%23f2c14e'/%3E%3Ccircle cx='16' cy='16' r='3.2' fill='%230b0d12'/%3E%3C/svg%3E">
     <style>
         :root {
             --bg: #0b0d12;
@@ -406,6 +407,57 @@
             border-top: 1px solid var(--line);
         }
 
+        /* ---------- Deck sheet ---------- */
+
+        .sheet {
+            position: fixed;
+            inset: 0;
+            z-index: 60;
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+        }
+
+        .sheet[hidden] { display: none; }
+
+        .sheet-backdrop {
+            position: absolute;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.66);
+        }
+
+        .sheet-panel {
+            position: relative;
+            width: 100%;
+            max-width: 620px;
+            background: var(--bg-lift);
+            border: 1px solid var(--line);
+            border-bottom: none;
+            border-radius: 22px 22px 0 0;
+            padding: 22px 18px 26px;
+            max-height: 88vh;
+            overflow-y: auto;
+            animation: rise 0.25s ease;
+        }
+
+        @keyframes rise {
+            from { transform: translateY(100%); }
+            to { transform: none; }
+        }
+
+        .sheet-panel h2 {
+            font-size: 0.78rem;
+            letter-spacing: 0.16em;
+            text-transform: uppercase;
+            color: var(--muted);
+            margin: 0 0 14px;
+            font-weight: 700;
+        }
+
+        .sheet-panel .modes { margin-bottom: 14px; }
+
+        .mode[data-current="true"] .mode-count { color: var(--gold); }
+
         .toast {
             position: fixed;
             left: 50%;
@@ -475,7 +527,7 @@
                 <li><strong>Turns alternate.</strong> Player 1 draws, then Player 2, all the way down the highway.</li>
                 <li><strong>Reversal.</strong> Three per person per deck. Make the other guy go first on a card you're not ready for.</li>
                 <li><strong>Tap out.</strong> Anything you flat out don't want to answer, tap out and draw a new one. No explanation owed. Use it and it's still a win — you kept playing.</li>
-                <li><strong>Run-ins.</strong> Every so often somebody's music gets hijacked or you owe each other a promo. Just do the card.</li>
+                <li><strong>Run-ins.</strong> Every so often somebody's music gets hijacked or you owe each other a promo. Both of you do it, and nobody loses a turn over it.</li>
                 <li><strong>The Last Ride</strong> deck is the closer. Save it for the final stretch of the drive.</li>
             </ol>
         </details>
@@ -521,6 +573,18 @@
         </div>
     </section>
 
+</div>
+
+<div class="sheet" id="sheet" hidden>
+    <div class="sheet-backdrop" id="sheet-backdrop"></div>
+    <div class="sheet-panel" role="dialog" aria-modal="true" aria-label="Switch decks">
+        <h2>Switch decks</h2>
+        <div class="modes" id="sheet-modes"></div>
+        <div class="row">
+            <button id="sheet-setup" class="btn btn-ghost" type="button">Setup screen</button>
+            <button id="sheet-close" class="btn btn-ghost" type="button">Close</button>
+        </div>
+    </div>
 </div>
 
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
@@ -917,8 +981,10 @@ function drawCard() {
 }
 
 function nextTurn() {
+    var wasRunIn = state.current && state.current.kind === "runin";
     state.played++;
-    state.turn = other(state.turn);
+    // A run-in is a bonus, not a stolen turn — the drawer still owes a real card.
+    if (!wasRunIn) state.turn = other(state.turn);
     state.current = null;
     renderGame();
     save();
@@ -978,15 +1044,16 @@ function renderGame() {
     }
 
     var answerer = card.answeredBy;
-    el.turnName.textContent = nameOf(answerer);
     el.card.className = "card" + (card.kind === "runin" ? " runin" : "");
 
     var kicker, follow;
     if (card.kind === "runin") {
         kicker = "Run-in!";
-        follow = "Both of you. No turn burned, nobody gets out of it.";
-        el.turnSub.textContent = "Interference — everybody's in on this one";
+        follow = "Both of you. Nobody gets out of this one.";
+        el.turnName.textContent = "Both of you";
+        el.turnSub.textContent = "Interference — nobody loses a turn over it";
     } else {
+        el.turnName.textContent = nameOf(answerer);
         kicker = deck.name + (card.reversed ? " · Reversed" : "");
         el.turnSub.textContent = card.reversed ? "Answering first (reversed)" : "Answers first";
         if (card.mirrored) {
@@ -1001,7 +1068,9 @@ function renderGame() {
         '<p class="card-prompt">' + escapeHtml(card.text) + "</p>" +
         '<p class="card-follow">' + escapeHtml(follow) + "</p>";
 
-    el.drawBtn.textContent = "Both answered → " + nameOf(other(drawer)) + "'s turn";
+    el.drawBtn.textContent = card.kind === "runin"
+        ? "Done → " + nameOf(drawer) + " still draws"
+        : "Both answered → " + nameOf(other(drawer)) + "'s turn";
     el.drawBtn.onclick = nextTurn;
     el.tapBtn.disabled = false;
     el.reverseBtn.disabled = card.kind === "runin" || card.reversed || state.reversals[drawer] <= 0;
@@ -1015,31 +1084,36 @@ function escapeHtml(text) {
         .replace(/>/g, "&gt;");
 }
 
-/* ---------- deck menu ---------- */
+/* ---------- deck sheet ---------- */
 
-function openMenu() {
-    var labels = DECK_ORDER.map(function (id, i) {
-        return (i + 1) + ") " + DECKS[id].name;
-    }).join("\n");
-    var answer = window.prompt(
-        "Switch decks — type a number:\n\n" + labels + "\n\n0) Back to the setup screen",
-        ""
-    );
-    if (answer === null) return;
-    var pick = parseInt(answer, 10);
-    if (pick === 0) {
-        showScreen("setup");
-        buildModeList();
-        return;
-    }
-    var id = DECK_ORDER[pick - 1];
-    if (!id) {
-        toast("Didn't catch that one.");
-        return;
-    }
-    switchDeck(id);
-    toast("Now playing: " + DECKS[id].name);
+function openSheet() {
+    el.sheetModes.innerHTML = "";
+    DECK_ORDER.forEach(function (id) {
+        var deck = DECKS[id];
+        var left = (state.piles[id] || DECKS[id].cards.map(function (_, i) { return i; })).length;
+        var btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "mode";
+        btn.dataset.current = id === state.deckId ? "true" : "false";
+        btn.setAttribute("aria-pressed", id === state.deckId ? "true" : "false");
+        btn.innerHTML =
+            '<span class="mode-top">' +
+                '<span class="mode-name">' + deck.name + "</span>" +
+                '<span class="mode-count">' + left + " left</span>" +
+            "</span>" +
+            '<span class="mode-tag">' + deck.tagline + "</span>";
+        btn.addEventListener("click", function () {
+            closeSheet();
+            if (id === state.deckId) return;
+            switchDeck(id);
+            toast("Now playing: " + deck.name);
+        });
+        el.sheetModes.appendChild(btn);
+    });
+    el.sheet.hidden = false;
 }
+
+function closeSheet() { el.sheet.hidden = true; }
 
 /* ---------- keep the screen on ---------- */
 
@@ -1078,6 +1152,8 @@ function init() {
     el.metaPlayed = $("meta-played");
     el.metaLeft = $("meta-left");
     el.toast = $("toast");
+    el.sheet = $("sheet");
+    el.sheetModes = $("sheet-modes");
 
     var saved = load();
     if (saved) {
@@ -1094,7 +1170,14 @@ function init() {
     buildModeList();
 
     el.startBtn.addEventListener("click", startGame);
-    el.menuBtn.addEventListener("click", openMenu);
+    el.menuBtn.addEventListener("click", openSheet);
+    $("sheet-close").addEventListener("click", closeSheet);
+    $("sheet-backdrop").addEventListener("click", closeSheet);
+    $("sheet-setup").addEventListener("click", function () {
+        closeSheet();
+        buildModeList();
+        showScreen("setup");
+    });
     el.reverseBtn.addEventListener("click", reversal);
     el.tapBtn.addEventListener("click", tapOut);
     el.closerBtn.addEventListener("click", function () {
