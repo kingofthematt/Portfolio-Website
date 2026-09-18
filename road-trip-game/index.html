@@ -445,16 +445,31 @@
             to { transform: none; }
         }
 
-        .sheet-panel h2 {
+        .sheet-head {
+            position: sticky;
+            top: -22px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            background: var(--bg-lift);
+            padding: 4px 0 14px;
+            margin-top: -4px;
+        }
+
+        .sheet-head h2 {
             font-size: 0.78rem;
             letter-spacing: 0.16em;
             text-transform: uppercase;
             color: var(--muted);
-            margin: 0 0 14px;
+            margin: 0;
             font-weight: 700;
         }
 
-        .sheet-panel .modes { margin-bottom: 14px; }
+        .sheet-head-actions {
+            display: flex;
+            gap: 8px;
+        }
 
         .mode[data-current="true"] .mode-count { color: var(--gold); }
 
@@ -510,7 +525,7 @@
                 </div>
                 <div class="name-field">
                     <label for="name-kid">Player 2</label>
-                    <input id="name-kid" type="text" value="Me" maxlength="14" autocomplete="off" spellcheck="false">
+                    <input id="name-kid" type="text" value="Matt" maxlength="14" autocomplete="off" spellcheck="false">
                 </div>
             </div>
         </div>
@@ -578,12 +593,14 @@
 <div class="sheet" id="sheet" hidden>
     <div class="sheet-backdrop" id="sheet-backdrop"></div>
     <div class="sheet-panel" role="dialog" aria-modal="true" aria-label="Switch decks">
-        <h2>Switch decks</h2>
-        <div class="modes" id="sheet-modes"></div>
-        <div class="row">
-            <button id="sheet-setup" class="btn btn-ghost" type="button">Setup screen</button>
-            <button id="sheet-close" class="btn btn-ghost" type="button">Close</button>
+        <div class="sheet-head">
+            <h2>Switch decks</h2>
+            <div class="sheet-head-actions">
+                <button id="sheet-setup" class="icon-btn" type="button">Setup</button>
+                <button id="sheet-close" class="icon-btn" type="button">Close</button>
+            </div>
         </div>
+        <div class="modes" id="sheet-modes"></div>
     </div>
 </div>
 
@@ -796,7 +813,7 @@ var STORE_KEY = "rideOrDie.v1";
 var REVERSALS_PER_DECK = 3;
 
 var state = {
-    names: { dad: "Dad", kid: "Me" },
+    names: { dad: "Dad", kid: "Matt" },
     deckId: "main",
     turn: "dad",
     piles: {},
@@ -1070,7 +1087,7 @@ function renderGame() {
 
     el.drawBtn.textContent = card.kind === "runin"
         ? "Done → " + nameOf(drawer) + " still draws"
-        : "Both answered → " + nameOf(other(drawer)) + "'s turn";
+        : "Both answered → over to " + nameOf(other(drawer));
     el.drawBtn.onclick = nextTurn;
     el.tapBtn.disabled = false;
     el.reverseBtn.disabled = card.kind === "runin" || card.reversed || state.reversals[drawer] <= 0;
