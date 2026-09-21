@@ -5,11 +5,12 @@
 
     /* Draw weights. A brand new card starts at NEW_WEIGHT; every "need to learn more"
        adds MISS_STEP, so a struggling card is drawn several times as often as a fresh
-       one. Cards marked "already know" leave the pool entirely. */
+       one. Cards marked "already know" leave the pool entirely. HOLD_BACK is how many
+       of the most recent cards are kept out of the next draw. */
     var NEW_WEIGHT = 5;
     var MISS_STEP = 4;
     var MAX_WEIGHT = 25;
-    var RECENT_PENALTY = 0.25;
+    var HOLD_BACK = 3;
 
     var state = { version: 1, categories: [], cards: [] };
     var storageWorks = true;
@@ -230,47 +231,43 @@
         navigate('study', scope === 'all' ? null : scope);
     }
 
-    /* Weighted random draw. Cards seen in the last few draws are damped so the same
-       card does not appear twice in a row while still keeping the extra weight. */
-    function drawCard() {
-        var pool = poolForScope(session.scope);
-        if (!pool.length) {
-            session.currentId = null;
-            session.revealed = false;
-            return;
-        }
+    /* Weighted random draw: each card's weight is its share of the odds. The few
+       most recently drawn cards are held back so nothing repeats immediately, which
+       is what spaces a heavy card out instead of letting it dominate in a clump. */
+    function chooseNext(pool, recent) {
+        if (!pool.length) return null;
 
-        var windowSize = Math.min(3, Math.floor(pool.length / 2));
-        var recent = windowSize > 0 ? session.recent.slice(-windowSize) : [];
+        var holdBack = Math.min(HOLD_BACK, Math.floor(pool.length / 2));
+        var blocked = holdBack > 0 ? recent.slice(-holdBack) : [];
 
         var candidates = pool.filter(function (card) {
-            return recent.indexOf(card.id) === -1;
+            return blocked.indexOf(card.id) === -1;
         });
         if (!candidates.length) candidates = pool;
 
         var total = 0;
         var weights = candidates.map(function (card) {
-            var weight = card.weight;
-            if (session.recent.indexOf(card.id) !== -1) weight *= RECENT_PENALTY;
-            weight = Math.max(weight, 0.2);
+            var weight = Math.max(card.weight, 0.2);
             total += weight;
             return weight;
         });
 
         var roll = Math.random() * total;
-        var picked = candidates[candidates.length - 1];
         for (var i = 0; i < candidates.length; i++) {
             roll -= weights[i];
-            if (roll <= 0) {
-                picked = candidates[i];
-                break;
-            }
+            if (roll <= 0) return candidates[i];
         }
+        return candidates[candidates.length - 1];
+    }
 
-        session.currentId = picked.id;
+    function drawCard() {
+        var picked = chooseNext(poolForScope(session.scope), session.recent);
         session.revealed = false;
+        session.currentId = picked ? picked.id : null;
+        if (!picked) return;
+
         session.recent.push(picked.id);
-        if (session.recent.length > 12) session.recent.shift();
+        if (session.recent.length > HOLD_BACK) session.recent.shift();
     }
 
     function snapshot(card) {
@@ -1097,6 +1094,14 @@
         history.replaceState({ name: 'home', categoryId: null }, '');
         navigate('home', null, true);
     }
+
+    /* Exposed so the draw logic can be exercised from the console or a test harness. */
+    window.flashcardsScheduler = {
+        chooseNext: chooseNext,
+        NEW_WEIGHT: NEW_WEIGHT,
+        MISS_STEP: MISS_STEP,
+        MAX_WEIGHT: MAX_WEIGHT
+    };
 
     document.addEventListener('DOMContentLoaded', init);
 })();
