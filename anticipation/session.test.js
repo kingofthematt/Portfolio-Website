@@ -26,9 +26,9 @@ const BANNED = [
   "lose a layer",
 ];
 
-test("a night is 14 cards and the heat only rises", () => {
+test("a night is 20 cards and the heat only rises", () => {
   const session = buildSession([], rngFrom(7));
-  assert.equal(session.length, 14);
+  assert.equal(session.length, 20);
   const rank = { notice: 0, want: 1, tease: 2, almost: 3 };
   for (let i = 1; i < session.length; i += 1) {
     assert.ok(rank[session[i].act] >= rank[session[i - 1].act]);
@@ -54,14 +54,18 @@ test("the night hits ice, a clothed lick or kiss, touch, then hands", () => {
   }
 });
 
-test("each night shows one nude or do-this card after hands", () => {
+test("each night shows two nude or do-this cards after hands", () => {
   const seen = new Set();
   for (let seed = 1; seed <= 40; seed += 1) {
     const session = buildSession([], rngFrom(seed));
     const hands = session.findIndex((card) => card.id === "hands");
-    const show = session.findIndex((card) => card.from === "show");
-    assert.ok(hands < show && show === session.length - 2, `seed ${seed}`);
-    seen.add(session[show].id);
+    const shows = session.flatMap((card, index) => (card.from === "show" ? [index] : []));
+    assert.equal(shows.length, 2, `seed ${seed}`);
+    assert.ok(shows[0] > hands, `seed ${seed}`);
+    assert.ok(shows[1] < session.length - 1, `seed ${seed}`);
+    assert.notEqual(session[shows[0]].id, session[shows[1]].id);
+    seen.add(session[shows[0]].id);
+    seen.add(session[shows[1]].id);
   }
   assert.deepEqual([...seen].sort(), ["sh-01", "sh-02", "sh-03", "sh-04"]);
   const blob = POOLS.show.map((card) => card.text.toLowerCase()).join("\n");
@@ -93,9 +97,9 @@ test("hidden cards stay out, and anchors fall back softer", () => {
 test("hiding every clothed dare still leaves a dressed tease", () => {
   const clothes = POOLS.tease.filter((card) => card.clothes).map((card) => card.id);
   const session = buildSession(clothes, rngFrom(4));
-  assert.equal(session.length, 14);
+  assert.equal(session.length, 20);
   const tease = session.filter((card) => card.from === "tease");
-  assert.equal(tease.length, 2);
+  assert.equal(tease.length, 4);
   assert.ok(tease.every((card) => !card.clothes));
 });
 
