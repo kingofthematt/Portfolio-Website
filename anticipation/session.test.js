@@ -29,7 +29,7 @@ const BANNED = [
 test("a night is 13 cards and the heat only rises", () => {
   const session = buildSession([], rngFrom(7));
   assert.equal(session.length, 13);
-  const rank = { close: 0, want: 1, tease: 2, almost: 3 };
+  const rank = { notice: 0, want: 1, tease: 2, almost: 3 };
   for (let i = 1; i < session.length; i += 1) {
     assert.ok(rank[session[i].act] >= rank[session[i - 1].act]);
   }
@@ -80,6 +80,22 @@ test("hiding every clothed dare still leaves a dressed tease", () => {
   const tease = session.filter((card) => card.from === "tease");
   assert.equal(tease.length, 2);
   assert.ok(tease.every((card) => !card.clothes));
+});
+
+test("the deck is a first night, not a shared history", () => {
+  const session = buildSession([], rngFrom(11));
+  assert.equal(session[0].act, "notice");
+  assert.equal(session[0].actName, "Notice");
+  const blob = allCards()
+    .flatMap((card) => [card.text, card.softer, card.note])
+    .filter(Boolean)
+    .join("\n")
+    .toLowerCase();
+  for (const phrase of ["ten years", "thanked", "fell for", "proud of me", "anniversary", "last time we"]) {
+    assert.equal(blob.includes(phrase), false, phrase);
+  }
+  const tonight = blob.match(/tonight/g) || [];
+  assert.ok(tonight.length >= 8, `expected first-night language, found ${tonight.length}`);
 });
 
 test("the deck stays on a date, not a debate or a stunt", () => {

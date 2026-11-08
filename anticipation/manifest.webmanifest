@@ -1,7 +1,7 @@
 {
-  "name": "Icebreaker",
-  "short_name": "Icebreaker",
-  "description": "A date-night card game that gets warmer on purpose, then ends.",
+  "name": "Anticipation",
+  "short_name": "Anticipation",
+  "description": "A first-night card game. Notice each other, tease, and stop while you still want more.",
   "start_url": "./",
   "display": "standalone",
   "background_color": "#0a0e17",

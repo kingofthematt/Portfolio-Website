@@ -1,8 +1,8 @@
-import { allCards } from "./cards.js";
+import { ACTS, allCards } from "./cards.js";
 import { buildSession } from "./session.js";
 
-const KEY = "icebreaker-hidden-v1";
-const ACT_ORDER = ["close", "want", "tease", "almost"];
+const KEY = "anticipation-hidden-v1";
+const ACT_ORDER = ["notice", "want", "tease", "almost"];
 
 const ENDINGS = {
   early: {
@@ -11,15 +11,15 @@ const ENDINGS = {
   },
   shower: {
     title: "Go start the water.",
-    body: "One of you gets in. The other stays close enough to watch. Turn, slow down, or come to the glass when they ask. They can step in with you, or stay there and tell you what they want when you get out. Leave this phone outside the bathroom.",
+    body: "One of you gets in. The other stays close enough to watch — this is the first time you get to look on purpose. Turn, slow down, or come to the glass when they ask. They can step in with you, or stay there and tell you what they want when you get out. Leave this phone outside the bathroom.",
   },
   film: {
     title: "A short film, then it's gone.",
-    body: "Take turns recording about twenty seconds of each other's body — only the parts you both agree to show. Watch each clip once, together. Then delete them before you do anything else. If either of you hesitates, don't record. Kiss them instead.",
+    body: "Only if you both want a record of tonight. Take turns recording about twenty seconds of each other's body — only the parts you both agree to show. Watch each clip once, together. Then delete them before you do anything else. If either of you hesitates, don't record. Kiss them instead.",
   },
   kiss: {
     title: "Put the phone face down.",
-    body: "You talked. You teased. You got your hands on each other. The rest of the night doesn't need a card.",
+    body: "You met tonight. You talked, you teased, you got your hands on each other. The rest of this first night doesn't need a card.",
   },
 };
 
@@ -179,13 +179,23 @@ function render() {
   state.animateIn = false;
   const view = state.screen === "play" ? renderPlay(animateIn) : state.screen === "end" ? renderEnd() : renderHome();
   app.innerHTML = `<main class="shell">${view}</main>`;
+  const snapTop = () => {
+    window.scrollTo(0, 0);
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
+  };
+  snapTop();
   if (animateIn) {
     const scene = app.querySelector(".card-scene");
     requestAnimationFrame(() => {
-      requestAnimationFrame(() => scene?.classList.add("is-open"));
+      requestAnimationFrame(() => {
+        scene?.classList.add("is-open");
+        snapTop();
+      });
     });
+  } else {
+    requestAnimationFrame(snapTop);
   }
-  window.scrollTo(0, 0);
 }
 
 function renderHome() {
@@ -206,16 +216,16 @@ function renderHome() {
       </details>`
     : "";
 
-  return `<p class="eyebrow">Date night</p>
-    <h1>Icebreaker</h1>
-    <p class="lede">Thirteen cards. A few true things, a few that make you laugh, then teasing that gets warmer — and then the phone goes face down.</p>
-    <p class="adult">For two adults. Either of you can soften, skip, or stop.</p>
-    <button type="button" class="btn btn-primary" data-action="start">Start the night</button>
+  return `<p class="eyebrow">First night</p>
+    <h1>Anticipation</h1>
+    <p class="lede">Thirteen cards for the night you meet. Notice each other, say the thing you’ve been holding, tease through clothes, and stop while you still want more.</p>
+    <p class="adult">For two adults who both want this. Either of you can soften, skip, or stop.</p>
+    <button type="button" class="btn btn-primary" data-action="start">Start tonight</button>
     <ol class="arc">
-      <li class="act-close"><strong>Close</strong><span>One real question, one funny one, one “who of us.”</span></li>
-      <li class="act-want"><strong>Want</strong><span>Say the flirty part out loud. A clothed kiss in the middle.</span></li>
+      <li class="act-notice"><strong>Notice</strong><span>What you clocked, what you almost said, who you think they are.</span></li>
+      <li class="act-want"><strong>Want</strong><span>Say it to someone you just met. A first kiss in the middle.</span></li>
       <li class="act-tease"><strong>Tease</strong><span>Ice in a kiss, then hands and mouths through clothes.</span></li>
-      <li class="act-almost"><strong>Almost</strong><span>Touch, maybe more, then a shower, a film you delete, or just the kiss.</span></li>
+      <li class="act-almost"><strong>Almost</strong><span>Touch, maybe skin, then a shower, a film you delete, or the phone face down.</span></li>
     </ol>
     ${hiddenBlock}`;
 }
@@ -231,7 +241,7 @@ function renderPlay(animateIn = false) {
     const rank = ACT_ORDER.indexOf(act);
     const currentRank = ACT_ORDER.indexOf(card.act);
     const cls = rank < currentRank ? "done" : rank === currentRank ? "now" : "";
-    const name = act === "close" ? "Close" : act === "want" ? "Want" : act === "tease" ? "Tease" : "Almost";
+    const name = ACTS[act].name;
     return `<li class="${cls}">${name}</li>`;
   }).join("");
 
@@ -239,9 +249,9 @@ function renderPlay(animateIn = false) {
   if (!open) {
     actions = `<button type="button" class="btn btn-primary" data-action="flip">Show the card</button>`;
   } else if (card.kind === "finale") {
-    actions = `<button type="button" class="choice" data-action="choose" data-ending="shower"><strong>Shower</strong><span>One of you in the water. The other watches, and can join.</span></button>
-      <button type="button" class="choice" data-action="choose" data-ending="film"><strong>Film, then delete</strong><span>About twenty seconds each. Watch it once. Delete it together.</span></button>
-      <button type="button" class="choice choice-quiet" data-action="choose" data-ending="kiss"><strong>Phone down</strong><span>Keep kissing. The rest of the night has no script.</span></button>`;
+    actions = `      <button type="button" class="choice" data-action="choose" data-ending="shower"><strong>Shower</strong><span>One of you in the water. The other gets the first real look, and can join.</span></button>
+      <button type="button" class="choice" data-action="choose" data-ending="film"><strong>Film, then delete</strong><span>A short record of tonight. Watch it once. Delete it together.</span></button>
+      <button type="button" class="choice choice-quiet" data-action="choose" data-ending="kiss"><strong>Phone down</strong><span>Keep kissing. The first night doesn’t need a script.</span></button>`;
   } else if (open) {
     const primary = card.kind === "dare" ? "We did it" : "Next";
     const softer = !card.softer
@@ -289,11 +299,11 @@ function renderEnd() {
   const backLabel = state.ending === "early" ? "Keep playing" : "Pick a different ending";
   return `<section class="end">
     <div class="end-top">
-      <p class="eyebrow">Icebreaker</p>
+      <p class="eyebrow">Anticipation</p>
     </div>
     <h1>${esc(ending.title)}</h1>
     <p class="end-copy">${esc(ending.body)}</p>
     <button type="button" class="btn btn-primary" data-action="resume">${backLabel}</button>
-    <button type="button" class="btn btn-ghost" data-action="home">Another night</button>
+    <button type="button" class="btn btn-ghost" data-action="home">Another first night</button>
   </section>`;
 }

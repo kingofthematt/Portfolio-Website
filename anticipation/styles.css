@@ -17,7 +17,10 @@
 
 * { box-sizing: border-box; }
 
-html, body { height: 100%; }
+html, body {
+  height: 100%;
+  overflow-anchor: none;
+}
 
 body {
   margin: 0;
@@ -145,7 +148,7 @@ h1 {
   line-height: 1.4;
 }
 
-.act-close strong { color: var(--gold); }
+.act-notice strong { color: var(--gold); }
 .act-want strong { color: var(--amber); }
 .act-tease strong { color: var(--flame); }
 .act-almost strong { color: var(--rose); }
@@ -229,7 +232,7 @@ h1 {
   color: #6f675f;
 }
 
-.play[data-act="close"] { --act: var(--gold); }
+.play[data-act="notice"] { --act: var(--gold); }
 .play[data-act="want"] { --act: var(--amber); }
 .play[data-act="tease"] { --act: var(--flame); }
 .play[data-act="almost"] { --act: var(--rose); }

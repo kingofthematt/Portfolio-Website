@@ -15,7 +15,7 @@ function facing(card, act) {
     return { back: "A dare.", rule: card.note || act.rule };
   }
   if (card.kind === "likely") {
-    return { back: "Who of us.", rule: "Point at who. Argue if it's close." };
+    return { back: "Who do you think.", rule: "Point at who. You're guessing." };
   }
   if (card.kind === "finale") {
     return { back: "Last card.", rule: "Both of you have to want it." };
