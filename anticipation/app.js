@@ -178,23 +178,19 @@ function render() {
   const animateIn = state.animateIn;
   state.animateIn = false;
   const view = state.screen === "play" ? renderPlay(animateIn) : state.screen === "end" ? renderEnd() : renderHome();
+  if (document.activeElement instanceof HTMLElement) document.activeElement.blur();
   app.innerHTML = `<main class="shell">${view}</main>`;
   const snapTop = () => {
+    app.scrollTop = 0;
     window.scrollTo(0, 0);
-    document.documentElement.scrollTop = 0;
-    document.body.scrollTop = 0;
   };
   snapTop();
+  requestAnimationFrame(snapTop);
   if (animateIn) {
     const scene = app.querySelector(".card-scene");
     requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
-        scene?.classList.add("is-open");
-        snapTop();
-      });
+      requestAnimationFrame(() => scene?.classList.add("is-open"));
     });
-  } else {
-    requestAnimationFrame(snapTop);
   }
 }
 
