@@ -214,14 +214,14 @@ function renderHome() {
 
   return `<p class="eyebrow">First night</p>
     <h1>Anticipation</h1>
-    <p class="lede">Thirteen cards for the night you meet. Notice each other, say the thing you’ve been holding, tease through clothes, and stop while you still want more.</p>
+    <p class="lede">Fourteen cards for the night you meet. Notice each other, say the thing you’ve been holding, tease through clothes, and stop while you still want more.</p>
     <p class="adult">For two adults who both want this. Either of you can soften, skip, or stop.</p>
     <button type="button" class="btn btn-primary" data-action="start">Start tonight</button>
     <ol class="arc">
       <li class="act-notice"><strong>Notice</strong><span>What you clocked, what you almost said, who you think they are.</span></li>
       <li class="act-want"><strong>Want</strong><span>Say it to someone you just met. A first kiss in the middle.</span></li>
       <li class="act-tease"><strong>Tease</strong><span>Ice in a kiss, then hands and mouths through clothes.</span></li>
-      <li class="act-almost"><strong>Almost</strong><span>Touch, maybe skin, then a shower, a film you delete, or the phone face down.</span></li>
+      <li class="act-almost"><strong>Almost</strong><span>Touch, maybe skin, then a nude you show or a photo they take. After that, a shower, a film you delete, or the phone face down.</span></li>
     </ol>
     ${hiddenBlock}`;
 }

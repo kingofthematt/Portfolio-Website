@@ -26,9 +26,9 @@ const BANNED = [
   "lose a layer",
 ];
 
-test("a night is 13 cards and the heat only rises", () => {
+test("a night is 14 cards and the heat only rises", () => {
   const session = buildSession([], rngFrom(7));
-  assert.equal(session.length, 13);
+  assert.equal(session.length, 14);
   const rank = { notice: 0, want: 1, tease: 2, almost: 3 };
   for (let i = 1; i < session.length; i += 1) {
     assert.ok(rank[session[i].act] >= rank[session[i - 1].act]);
@@ -54,6 +54,23 @@ test("the night hits ice, a clothed lick or kiss, touch, then hands", () => {
   }
 });
 
+test("each night shows one nude or do-this card after hands", () => {
+  const seen = new Set();
+  for (let seed = 1; seed <= 40; seed += 1) {
+    const session = buildSession([], rngFrom(seed));
+    const hands = session.findIndex((card) => card.id === "hands");
+    const show = session.findIndex((card) => card.from === "show");
+    assert.ok(hands < show && show === session.length - 2, `seed ${seed}`);
+    seen.add(session[show].id);
+  }
+  assert.deepEqual([...seen].sort(), ["sh-01", "sh-02", "sh-03", "sh-04"]);
+  const blob = POOLS.show.map((card) => card.text.toLowerCase()).join("\n");
+  assert.match(blob, /take a nude right now/);
+  assert.match(blob, /favorite nude of yourself/);
+  assert.match(blob, /however they want it/);
+  assert.match(blob, /one thing to do/);
+});
+
 test("different nights draw different questions", () => {
   const firsts = new Set(
     Array.from({ length: 20 }, (_, seed) => buildSession([], rngFrom(seed + 3))[0].id),
@@ -76,7 +93,7 @@ test("hidden cards stay out, and anchors fall back softer", () => {
 test("hiding every clothed dare still leaves a dressed tease", () => {
   const clothes = POOLS.tease.filter((card) => card.clothes).map((card) => card.id);
   const session = buildSession(clothes, rngFrom(4));
-  assert.equal(session.length, 13);
+  assert.equal(session.length, 14);
   const tease = session.filter((card) => card.from === "tease");
   assert.equal(tease.length, 2);
   assert.ok(tease.every((card) => !card.clothes));

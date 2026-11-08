@@ -221,6 +221,36 @@ export const POOLS = {
       note: "Their hand can move yours. A tap means stop.",
     },
   ],
+  show: [
+    {
+      id: "sh-01",
+      kind: "dare",
+      text: "Take a nude right now. One photo, you naked, and hand them the phone. Let them look as long as they want. Delete it after unless you both want to keep it.",
+      softer: "Take the photo in underwear, or under a sheet, and show them that.",
+      note: "A photo of you. Delete it unless you both want it kept.",
+    },
+    {
+      id: "sh-02",
+      kind: "dare",
+      text: "Show them your favorite nude of yourself. Tell them what you like about it. If you don't have one saved, take one now and show them that.",
+      softer: "Describe that photo instead of opening it, or show a clothed picture you like of yourself.",
+      note: "A photo of you, not of anyone else.",
+    },
+    {
+      id: "sh-03",
+      kind: "dare",
+      text: "Let them take a sexy photo of you, nude, however they want it. They choose the pose, the angle, and how much of you is in frame. You can shift, cover, or stop. Look at it together. Delete it unless you both want to keep it.",
+      softer: "They still direct the photo. You keep one piece of clothing on.",
+      note: "They direct it. You can stop. Delete it unless you both want it.",
+    },
+    {
+      id: "sh-04",
+      kind: "dare",
+      text: "They tell you one thing to do. You do that thing. If you don't want the one they picked, they name a different one, or you skip.",
+      softer: "They tell you one thing that keeps some clothes on. You do that.",
+      note: "One thing. A no means they pick again, or you skip.",
+    },
+  ],
   finale: [
     {
       id: "finale",
@@ -244,6 +274,7 @@ export const SCRIPT = [
   { act: "tease", pool: "tease", clothes: true },
   { act: "almost", pool: "touch", fixed: true },
   { act: "almost", pool: "hands", fixed: true },
+  { act: "almost", pool: "show" },
   { act: "almost", pool: "finale", fixed: true },
 ];
 
@@ -288,6 +319,14 @@ export const FALLBACKS = {
     text: "Kiss them wherever they tap, through their clothes.",
     softer: "Kiss their mouth, slowly.",
     note: "Clothes stay on.",
+  },
+  show: {
+    id: "fb-show",
+    kind: "dare",
+    locked: true,
+    text: "Show them one photo of yourself that you think is sexy. Clothes or none, your call.",
+    softer: "Describe the photo instead of opening it.",
+    note: "A photo of you.",
   },
 };
 
