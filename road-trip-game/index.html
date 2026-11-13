@@ -1,0 +1,1213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#0b0d12">
+    <title>Ride or Die — A Car Ride Card Game</title>
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230b0d12'/%3E%3Cellipse cx='16' cy='16' rx='9' ry='6.5' fill='%23f2c14e'/%3E%3Ccircle cx='16' cy='16' r='3.2' fill='%230b0d12'/%3E%3C/svg%3E">
+    <style>
+        :root {
+            --bg: #0b0d12;
+            --bg-lift: #141821;
+            --gold: #f2c14e;
+            --gold-deep: #c9962b;
+            --crimson: #c8102e;
+            --card: #fdfbf5;
+            --card-ink: #16181d;
+            --muted: #9aa3b2;
+            --line: rgba(255, 255, 255, 0.12);
+            --font: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+        }
+
+        * { box-sizing: border-box; }
+
+        html, body {
+            margin: 0;
+            padding: 0;
+            min-height: 100%;
+        }
+
+        body {
+            font-family: var(--font);
+            background: var(--bg);
+            background-image:
+                radial-gradient(900px 500px at 50% -12%, rgba(242, 193, 78, 0.16), transparent 70%),
+                radial-gradient(600px 400px at 100% 100%, rgba(200, 16, 46, 0.14), transparent 70%);
+            background-attachment: fixed;
+            color: #fff;
+            -webkit-text-size-adjust: 100%;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .wrap {
+            max-width: 620px;
+            margin: 0 auto;
+            padding: 20px 18px 40px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* ---------- Shared bits ---------- */
+
+        .kicker {
+            font-size: 0.72rem;
+            letter-spacing: 0.18em;
+            text-transform: uppercase;
+            color: var(--gold);
+            font-weight: 700;
+        }
+
+        .btn {
+            font-family: var(--font);
+            font-size: 1.05rem;
+            font-weight: 700;
+            border: none;
+            border-radius: 14px;
+            padding: 18px 22px;
+            width: 100%;
+            cursor: pointer;
+            transition: transform 0.15s ease, filter 0.15s ease;
+        }
+
+        .btn:active { transform: scale(0.98); }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--gold) 0%, var(--gold-deep) 100%);
+            color: #1a1205;
+            box-shadow: 0 10px 28px rgba(242, 193, 78, 0.28);
+        }
+
+        .btn-ghost {
+            background: rgba(255, 255, 255, 0.07);
+            color: #fff;
+            border: 1px solid var(--line);
+            font-size: 0.95rem;
+            padding: 14px 18px;
+        }
+
+        .btn-ghost:disabled {
+            opacity: 0.35;
+            cursor: default;
+        }
+
+        .row {
+            display: flex;
+            gap: 10px;
+        }
+
+        .row > * { flex: 1; }
+
+        .screen { display: none; flex: 1; flex-direction: column; }
+        .screen.active { display: flex; }
+
+        /* ---------- Setup ---------- */
+
+        .title-block {
+            text-align: center;
+            padding: 8px 0 22px;
+        }
+
+        .title-block h1 {
+            font-size: 2.7rem;
+            line-height: 1.02;
+            margin: 10px 0 12px;
+            font-weight: 800;
+            letter-spacing: -0.02em;
+            text-transform: uppercase;
+        }
+
+        .title-block h1 span {
+            display: block;
+            color: var(--gold);
+            font-size: 1.15rem;
+            letter-spacing: 0.3em;
+            margin-top: 10px;
+            font-weight: 700;
+        }
+
+        .title-block p {
+            color: var(--muted);
+            font-size: 1rem;
+            line-height: 1.6;
+            margin: 0 auto;
+            max-width: 42ch;
+        }
+
+        .panel {
+            background: var(--bg-lift);
+            border: 1px solid var(--line);
+            border-radius: 18px;
+            padding: 20px;
+            margin-bottom: 14px;
+        }
+
+        .panel h2 {
+            font-size: 0.78rem;
+            letter-spacing: 0.16em;
+            text-transform: uppercase;
+            color: var(--muted);
+            margin: 0 0 14px;
+            font-weight: 700;
+        }
+
+        .name-grid {
+            display: flex;
+            gap: 12px;
+        }
+
+        .name-field { flex: 1; }
+
+        .name-field label {
+            display: block;
+            font-size: 0.8rem;
+            color: var(--muted);
+            margin-bottom: 6px;
+        }
+
+        .name-field input {
+            width: 100%;
+            font-family: var(--font);
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: #fff;
+            background: rgba(0, 0, 0, 0.35);
+            border: 1px solid var(--line);
+            border-radius: 12px;
+            padding: 14px;
+        }
+
+        .name-field input:focus {
+            outline: none;
+            border-color: var(--gold);
+        }
+
+        .modes {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .mode {
+            display: block;
+            width: 100%;
+            text-align: left;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid var(--line);
+            border-radius: 14px;
+            padding: 16px;
+            cursor: pointer;
+            font-family: var(--font);
+            color: #fff;
+            transition: border-color 0.15s ease, background 0.15s ease;
+        }
+
+        .mode[aria-pressed="true"] {
+            border-color: var(--gold);
+            background: rgba(242, 193, 78, 0.12);
+        }
+
+        .mode-top {
+            display: flex;
+            align-items: baseline;
+            justify-content: space-between;
+            gap: 10px;
+        }
+
+        .mode-name {
+            font-size: 1.1rem;
+            font-weight: 800;
+        }
+
+        .mode-count {
+            font-size: 0.75rem;
+            color: var(--muted);
+            white-space: nowrap;
+        }
+
+        .mode-tag {
+            display: block;
+            font-size: 0.9rem;
+            color: var(--muted);
+            line-height: 1.45;
+            margin-top: 5px;
+        }
+
+        details.rules {
+            border: 1px solid var(--line);
+            border-radius: 14px;
+            padding: 0 18px;
+            margin-bottom: 14px;
+            background: rgba(255, 255, 255, 0.03);
+        }
+
+        details.rules summary {
+            padding: 16px 0;
+            cursor: pointer;
+            font-weight: 700;
+            font-size: 0.95rem;
+        }
+
+        details.rules ol {
+            margin: 0 0 18px;
+            padding-left: 20px;
+            color: var(--muted);
+            line-height: 1.7;
+            font-size: 0.95rem;
+        }
+
+        details.rules li + li { margin-top: 8px; }
+
+        .safety {
+            display: flex;
+            gap: 10px;
+            align-items: flex-start;
+            color: var(--muted);
+            font-size: 0.85rem;
+            line-height: 1.5;
+            margin: 16px 2px 0;
+        }
+
+        /* ---------- Game ---------- */
+
+        .topbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 18px;
+        }
+
+        .topbar .deck-label {
+            font-size: 0.72rem;
+            letter-spacing: 0.16em;
+            text-transform: uppercase;
+            color: var(--muted);
+            font-weight: 700;
+        }
+
+        .icon-btn {
+            background: rgba(255, 255, 255, 0.07);
+            border: 1px solid var(--line);
+            color: #fff;
+            border-radius: 10px;
+            padding: 8px 14px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            font-family: var(--font);
+            cursor: pointer;
+        }
+
+        .turn {
+            text-align: center;
+            margin-bottom: 16px;
+        }
+
+        .turn-name {
+            font-size: 2.1rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: -0.01em;
+            line-height: 1.1;
+        }
+
+        .turn-sub {
+            color: var(--muted);
+            font-size: 0.9rem;
+            margin-top: 4px;
+        }
+
+        .card-stage {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 6px 0 18px;
+        }
+
+        .card {
+            width: 100%;
+            background: var(--card);
+            color: var(--card-ink);
+            border-radius: 22px;
+            padding: 30px 26px;
+            min-height: 260px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            box-shadow: 0 22px 50px rgba(0, 0, 0, 0.55);
+            border-top: 7px solid var(--gold);
+            animation: deal 0.32s ease;
+        }
+
+        @keyframes deal {
+            from { opacity: 0; transform: translateY(14px) rotate(-1.2deg); }
+            to { opacity: 1; transform: none; }
+        }
+
+        .card.runin {
+            border-top-color: var(--crimson);
+            background: #fff4f2;
+        }
+
+        .card.empty {
+            background: rgba(255, 255, 255, 0.05);
+            color: #fff;
+            border: 1px dashed var(--line);
+            border-top: 1px dashed var(--line);
+            box-shadow: none;
+            text-align: center;
+            animation: none;
+        }
+
+        .card-kicker {
+            font-size: 0.7rem;
+            letter-spacing: 0.18em;
+            text-transform: uppercase;
+            font-weight: 800;
+            color: var(--gold-deep);
+            margin-bottom: 14px;
+        }
+
+        .card.runin .card-kicker { color: var(--crimson); }
+
+        .card-prompt {
+            font-size: 1.45rem;
+            line-height: 1.38;
+            font-weight: 600;
+            margin: 0;
+        }
+
+        .card-follow {
+            margin: 18px 0 0;
+            padding-top: 14px;
+            border-top: 1px solid rgba(0, 0, 0, 0.1);
+            font-size: 0.95rem;
+            line-height: 1.5;
+            color: #5b6270;
+        }
+
+        .card.empty .card-prompt { font-size: 1.15rem; font-weight: 500; color: var(--muted); }
+
+        .controls {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .meta {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+            color: var(--muted);
+            font-size: 0.78rem;
+            margin-top: 14px;
+            padding-top: 12px;
+            border-top: 1px solid var(--line);
+        }
+
+        /* ---------- Deck sheet ---------- */
+
+        .sheet {
+            position: fixed;
+            inset: 0;
+            z-index: 60;
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+        }
+
+        .sheet[hidden] { display: none; }
+
+        .sheet-backdrop {
+            position: absolute;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.66);
+        }
+
+        .sheet-panel {
+            position: relative;
+            width: 100%;
+            max-width: 620px;
+            background: var(--bg-lift);
+            border: 1px solid var(--line);
+            border-bottom: none;
+            border-radius: 22px 22px 0 0;
+            padding: 22px 18px 26px;
+            max-height: 88vh;
+            overflow-y: auto;
+            animation: rise 0.25s ease;
+        }
+
+        @keyframes rise {
+            from { transform: translateY(100%); }
+            to { transform: none; }
+        }
+
+        .sheet-head {
+            position: sticky;
+            top: -22px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            background: var(--bg-lift);
+            padding: 4px 0 14px;
+            margin-top: -4px;
+        }
+
+        .sheet-head h2 {
+            font-size: 0.78rem;
+            letter-spacing: 0.16em;
+            text-transform: uppercase;
+            color: var(--muted);
+            margin: 0;
+            font-weight: 700;
+        }
+
+        .sheet-head-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .mode[data-current="true"] .mode-count { color: var(--gold); }
+
+        .toast {
+            position: fixed;
+            left: 50%;
+            bottom: 22px;
+            transform: translateX(-50%) translateY(120%);
+            background: var(--gold);
+            color: #1a1205;
+            font-weight: 700;
+            font-size: 0.9rem;
+            padding: 13px 20px;
+            border-radius: 999px;
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.45);
+            transition: transform 0.28s ease;
+            z-index: 50;
+            max-width: 90vw;
+            text-align: center;
+        }
+
+        .toast.show { transform: translateX(-50%) translateY(0); }
+
+        @media (max-width: 380px) {
+            .title-block h1 { font-size: 2.2rem; }
+            .card-prompt { font-size: 1.3rem; }
+            .turn-name { font-size: 1.8rem; }
+            .name-grid { flex-direction: column; }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            * { animation: none !important; transition: none !important; }
+        }
+    </style>
+</head>
+<body>
+<div class="wrap">
+
+    <!-- ================= SETUP ================= -->
+    <section id="setup" class="screen active">
+        <div class="title-block">
+            <div class="kicker">Two players · One car · No phones for the driver</div>
+            <h1>Ride or Die<span>The Card Game</span></h1>
+            <p>You draw, you answer first, then the other guy answers. Back and forth until somebody gets emotional at a gas station.</p>
+        </div>
+
+        <div class="panel">
+            <h2>Who's in the car</h2>
+            <div class="name-grid">
+                <div class="name-field">
+                    <label for="name-dad">Player 1</label>
+                    <input id="name-dad" type="text" value="Dad" maxlength="14" autocomplete="off" spellcheck="false">
+                </div>
+                <div class="name-field">
+                    <label for="name-kid">Player 2</label>
+                    <input id="name-kid" type="text" value="Matt" maxlength="14" autocomplete="off" spellcheck="false">
+                </div>
+            </div>
+        </div>
+
+        <div class="panel">
+            <h2>Pick a deck</h2>
+            <div class="modes" id="mode-list"></div>
+        </div>
+
+        <details class="rules">
+            <summary>How it works</summary>
+            <ol>
+                <li><strong>Draw, then answer.</strong> Whoever's turn it is draws the card, reads it out loud, and answers it first. Then the other guy answers the same one. Every card gets two answers.</li>
+                <li><strong>Turns alternate.</strong> Player 1 draws, then Player 2, all the way down the highway.</li>
+                <li><strong>Reversal.</strong> Three per person per deck. Make the other guy go first on a card you're not ready for.</li>
+                <li><strong>Tap out.</strong> Anything you flat out don't want to answer, tap out and draw a new one. No explanation owed. Use it and it's still a win — you kept playing.</li>
+                <li><strong>Run-ins.</strong> Every so often somebody's music gets hijacked or you owe each other a promo. Both of you do it, and nobody loses a turn over it.</li>
+                <li><strong>The Last Ride</strong> deck is the closer. Save it for the final stretch of the drive.</li>
+            </ol>
+        </details>
+
+        <button id="start-btn" class="btn btn-primary">Ring the Bell</button>
+
+        <p class="safety">
+            <span aria-hidden="true">🛞</span>
+            <span>Passenger holds the phone and reads the cards. Driver keeps both hands on the wheel and does the talking.</span>
+        </p>
+    </section>
+
+    <!-- ================= GAME ================= -->
+    <section id="game" class="screen">
+        <div class="topbar">
+            <div class="deck-label" id="deck-label">Main Event</div>
+            <button id="menu-btn" class="icon-btn" type="button">Decks</button>
+        </div>
+
+        <div class="turn">
+            <div class="turn-name" id="turn-name">Dad</div>
+            <div class="turn-sub" id="turn-sub">Your draw</div>
+        </div>
+
+        <div class="card-stage">
+            <div class="card empty" id="card">
+                <p class="card-prompt">Tap <strong>Draw a Card</strong> to start the match.</p>
+            </div>
+        </div>
+
+        <div class="controls">
+            <button id="draw-btn" class="btn btn-primary">Draw a Card</button>
+            <div class="row">
+                <button id="reverse-btn" class="btn btn-ghost" type="button">Reversal</button>
+                <button id="tap-btn" class="btn btn-ghost" type="button">Tap Out</button>
+            </div>
+            <button id="closer-btn" class="btn btn-ghost" type="button">Wrap it up → The Last Ride</button>
+        </div>
+
+        <div class="meta">
+            <span id="meta-played">0 cards played</span>
+            <span id="meta-left">—</span>
+        </div>
+    </section>
+
+</div>
+
+<div class="sheet" id="sheet" hidden>
+    <div class="sheet-backdrop" id="sheet-backdrop"></div>
+    <div class="sheet-panel" role="dialog" aria-modal="true" aria-label="Switch decks">
+        <div class="sheet-head">
+            <h2>Switch decks</h2>
+            <div class="sheet-head-actions">
+                <button id="sheet-setup" class="icon-btn" type="button">Setup</button>
+                <button id="sheet-close" class="icon-btn" type="button">Close</button>
+            </div>
+        </div>
+        <div class="modes" id="sheet-modes"></div>
+    </div>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+/* ============================================================
+   Ride or Die — a two-player card game for a long drive.
+   Cards support two shapes:
+     "plain string"        → both answer the same question
+     { dad: "…", kid: "…" } → each side answers their own mirrored version
+   {them} in any prompt becomes the other player's name.
+   ============================================================ */
+
+var DECKS = {
+    main: {
+        name: "Main Event",
+        tagline: "The big deck. Wrestling, road trips, and the stuff neither of you brings up on your own.",
+        runIns: true,
+        cards: [
+            "First match the two of us ever watched together — what do you remember about the room? Who was there, what were we eating, what was I like?",
+            "Wrestling is scripted and it still made us feel real things. What's a match that actually got you emotional, and did you admit it at the time?",
+            { dad: "When I was out on the mat, what was going through your head up in those stands that you never said out loud?",
+              kid: "After a hard match, what did you want to hear from {them} that you never asked for?" },
+            { dad: "Which of my losses hurt you more than it hurt me?",
+              kid: "Which of your losses do you think was hardest on {them}?" },
+            "If you could only rewatch one of my matches, which one are you picking and why that one?",
+            "Was there ever a coach of mine you wanted to say something to and didn't? What would you have said?",
+            "Name something wrestling taught me that you hoped it would — then one thing it taught me that you didn't see coming.",
+            "Cutting weight: honestly, what was that like to watch? Knowing what you know now, would you do it the same way?",
+            "What's my finisher in real life — the move I go to when I'm backed into a corner?",
+            "Am I a face or a heel? Be honest. And when did I turn?",
+            "Who in this family is the best worker — the one who makes everybody else look good and never needs the spotlight?",
+            "If the two of us were a tag team: name, entrance theme, and who takes the hot tag when things go bad?",
+            "Kayfabe question — what's something you pretended not to notice about me to protect me?",
+            "When have you been working me? Acting like everything was fine when it wasn't.",
+            "Your Mount Rushmore of wrestling. Four names, then tell me which one you actually wish you were more like.",
+            "Favorite promo of all time. What is it about that one that gets you every time?",
+            "If somebody was booking your life right now, what's the storyline they'd be running?",
+            "Who are you at work versus who you are at home? How far apart are those two guys?",
+            "Which road trip would you take again exactly how it happened — and which one would you re-book from scratch?",
+            "Something went wrong on a trip and it turned into the best part. Which one?",
+            "What's a sign we drove past over and over that you always wanted to stop at? Say it out loud, it's going on the list.",
+            "Those long night drives with us asleep in the back — what were you thinking about out there?",
+            "What song can you not hear now without picturing a car and the two of us in it?",
+            "Worst meal we ever ate on the road. Who picked it, and are you still mad about it?",
+            "Did you ever get lost and not tell us? How long did you drive before you admitted it?",
+            "Which trip did you dread and then love? Which one did you plan for months that flopped?",
+            "What did those trips cost you that we had no clue about at the time?",
+            "What age of mine would you take one more day of? Just one day.",
+            "What are you proud of me for that you've never said out loud because it felt corny?",
+            "Name a way I'm like you that worries you. Then a way I'm like you that you're glad about.",
+            "What did you think your life would look like at the age I am now? How close did it land?",
+            "What's a decision you made because of me that changed your life more than I realize?",
+            "What's something your own dad did that you swore you'd never do — and then caught yourself doing?",
+            "What was the hardest year you've had that I was too young to notice?",
+            "Is there something you think I'm wrong about that you've stopped arguing with me about?",
+            "What advice did you give me that you'd take back now?",
+            "What am I underestimating about myself? What am I overestimating?",
+            "What's something you want to do in the next five years that you've never said out loud to anybody?",
+            "When do you feel the most like yourself these days?",
+            "Who do you miss that we don't talk about much?",
+            "What are you actually worried about with me moving? Not the logistics. The real thing.",
+            "What do you want our phone calls to look like after I go? Be specific — how often, and what do you want to hear about?",
+            "One thing from the house you want me to take with me. Why that thing?",
+            "What do you hope I do in my first month out there that I wouldn't think to do on my own?",
+            "When you picture coming out to visit me, what's the first thing you see us doing?",
+            "What do you need from me that you're never going to ask for?",
+            "Best entrance in wrestling history. You name three, I name three, we argue about it until the next exit.",
+            "You get one wrestling move — real, functional, usable once a year. Which one, and when are you using it?",
+            "The two of us have a match. What's your entrance, what's mine, who wins and how?",
+            "Which person in this family could take a chair shot and keep walking?",
+            "You're the commissioner of this family. First three rules you're making?",
+            "Which of your own stories is your best one — and are you completely sure it's true?",
+            "Who's the most underrated person in this family? The one who never gets a title shot.",
+            "Pitch a gimmick for me and one for yourself. Name, gear, entrance music. Don't hold back.",
+            "Dumbest injury either of us has ever had. Loser buys the next gas station snack."
+        ]
+    },
+
+    shoot: {
+        name: "Shoot Interview",
+        tagline: "No kayfabe, no jokes, no bailing out. The deep end — best after an hour on the road.",
+        runIns: false,
+        cards: [
+            "No kayfabe: what's the thing about me you think about at two in the morning?",
+            "What have you forgiven me for that I never apologized for?",
+            "What do you need to hear from me that I've never said?",
+            "Is there anything between us that still feels unfinished?",
+            { dad: "When did you realize I was an adult, and how did that land for you?",
+              kid: "When did you first see {them} as a regular person instead of just your dad?" },
+            "If I only remember three things you ever taught me, which three do you want them to be?",
+            { dad: "What was the hardest part of being my dad?",
+              kid: "What's been the hardest part of being {them}'s kid?" },
+            "What do you want me to say at your Hall of Fame induction? Give me actual words.",
+            "What's a mistake you made with me that you'd undo if you could?",
+            "When were you most proud of me and I had no idea you were watching?",
+            "What do you think I'm running from? What do you think I'm running toward?",
+            "What do you hope I do differently than you did?",
+            "What do you wish you'd asked your own dad while you still could?",
+            "What's a memory of us you go back to when you miss me?",
+            "What are you afraid of that you'd never admit in front of the whole family?",
+            "What's something you know about me that I don't think you know?"
+        ]
+    },
+
+    reel: {
+        name: "Highlight Reel",
+        tagline: "Storytelling deck. Old trips, old cars, old matches. Long answers encouraged.",
+        runIns: true,
+        cards: [
+            "Tell the trip story you've told the most times. The other guy gets to throw one BS flag on a detail.",
+            "The best five minutes of any trip we ever took. Go.",
+            "A moment from my childhood I probably don't remember but you never forgot.",
+            "The first time you were genuinely scared with us in the car.",
+            "Best motel we ever stayed in and the worst one. Defend both.",
+            "A time we laughed so hard you had to pull the car over.",
+            "The thing about me at eight years old that cracked you up.",
+            "The best match we ever watched live together. Set the whole scene — seats, crowd, all of it.",
+            "The car you loved the most, and what finally happened to it.",
+            "A meal from a trip you'd eat again tonight if you could.",
+            "The moment you knew I was going to be okay.",
+            "Which of our trips would make the best documentary, and who narrates it?",
+            "The thing you packed on every single trip that nobody else understood."
+        ]
+    },
+
+    booking: {
+        name: "Fantasy Booking",
+        tagline: "Pure fun. You're the creative team now. Great for breaking up the heavy stuff.",
+        runIns: true,
+        cards: [
+            "Book the family pay-per-view. Five matches — who's in them and what are they fighting over?",
+            "You're inducting one completely non-famous person into the Hall of Fame. Who, and give me one line of the speech.",
+            "Draft a tag team out of this family. You pick first.",
+            "Take one real thing that happened to us and rewrite it as a storyline with the ending you wanted.",
+            "Pick my entrance theme for the new city. Then pick one for yourself.",
+            "Who in the extended family is secretly the best heel?",
+            "Build the perfect road trip: four stops, anywhere, one rule — no flying.",
+            "You get to book one more trip, just us two. Where, how long, and what's the first stop?",
+            "We're starting a wrestling podcast. Name it and pitch episode one.",
+            "One wrestler is your cornerman for your worst week. Who are you picking?",
+            "Make me a championship belt for something I'm genuinely the best in the world at.",
+            "If me moving away was a storyline, how does it end? Book the finish.",
+            "Three-way Royal Rumble: you, me, and one family member. Who goes out first, who wins?"
+        ]
+    },
+
+    squash: {
+        name: "Squash Match",
+        tagline: "Rapid fire. First answer that comes out of your mouth, no thinking. Use it to warm up.",
+        runIns: false,
+        cards: [
+            "Austin or Rock. Go.",
+            "Greatest of all time. One name, no explanation.",
+            "Attitude Era or right now?",
+            "Best theme song. First thing that comes to mind.",
+            "Cage match or ladder match?",
+            "Most overrated wrestler. Say it with your chest.",
+            "Best tag team ever.",
+            "Chair shot or a Stunner. Pick your poison.",
+            "Best catchphrase of all time.",
+            "Better story: heel turn or face turn?",
+            "Which wrestler would you actually want as a training partner?",
+            "The wrestler you love to hate who is genuinely great at their job.",
+            "Amateur or pro — which one is harder? One sentence.",
+            "Best gas station food. Worst gas station food. Fast.",
+            "One-word review of my wrestling career.",
+            "Hardest workout you've ever done in your life.",
+            "Best finisher ever, and you can't say the obvious one.",
+            "Worst haircut in family history.",
+            "Rest stop bathroom, or hold it to the next exit?",
+            "Who's the better driver? Honestly."
+        ]
+    },
+
+    lastride: {
+        name: "The Last Ride",
+        tagline: "The closer. Eight cards for the final stretch, when you can see the exit sign.",
+        runIns: false,
+        cards: [
+            "Say the thing you'd say if this was the only drive we had left to say it.",
+            "What are you taking with you from this trip?",
+            "One promise each. Out loud, right now.",
+            "What's our thing going to be now that I'm not down the road anymore? Pick something we'll actually do.",
+            { dad: "Tell me you're proud of me, in your own words. No jokes, no deflecting.",
+              kid: "Tell {them} what he gave you that you'll be carrying the rest of your life." },
+            "What's the first thing you'll tell people about this drive?",
+            "Pick the date of the next trip. Not \u201csometime.\u201d An actual date.",
+            "Finishing move: one sentence each that you want the other guy to remember."
+        ]
+    }
+};
+
+var RUN_INS = [
+    "Twenty-second promo hyping up the other guy. Real ones only — no jokes allowed.",
+    "At the next stop you each buy the other a snack you think they'll love. No hints, no takebacks.",
+    "Sixty seconds of silence. Just the road. Then say the first thing that was in your head.",
+    "Say one thing you appreciate about the other guy. Right now, no build-up.",
+    "Music hijack. The other guy picks the next three songs and you don't complain about any of them.",
+    "Pick a crowd chant for each other. The kind a real crowd would actually do.",
+    "Oldest photo on your phone of the two of us. Find it, then tell the story.",
+    "TITLE SHOT — ask the question you've actually been wanting to ask this whole trip. Anything goes.",
+    "Next stop: no phones for the entire stop. Deal?",
+    "Trade one compliment you'd never say sober. You're both sober. Say it anyway."
+];
+
+var DECK_ORDER = ["main", "shoot", "reel", "booking", "squash", "lastride"];
+var STORE_KEY = "rideOrDie.v1";
+var REVERSALS_PER_DECK = 3;
+
+var state = {
+    names: { dad: "Dad", kid: "Matt" },
+    deckId: "main",
+    turn: "dad",
+    piles: {},
+    played: 0,
+    reversals: { dad: REVERSALS_PER_DECK, kid: REVERSALS_PER_DECK },
+    current: null,
+    runInCooldown: 2
+};
+
+var el = {};
+var wakeLock = null;
+
+function $(id) { return document.getElementById(id); }
+
+function shuffle(list) {
+    var out = list.slice();
+    for (var i = out.length - 1; i > 0; i--) {
+        var j = Math.floor(Math.random() * (i + 1));
+        var tmp = out[i];
+        out[i] = out[j];
+        out[j] = tmp;
+    }
+    return out;
+}
+
+function freshPile(deckId) {
+    var indexes = DECKS[deckId].cards.map(function (_, i) { return i; });
+    return shuffle(indexes);
+}
+
+function other(who) { return who === "dad" ? "kid" : "dad"; }
+
+function nameOf(who) {
+    return (state.names[who] || "").trim() || (who === "dad" ? "Player 1" : "Player 2");
+}
+
+function fillTokens(text, who) {
+    return text
+        .replace(/\{them\}/g, nameOf(other(who)))
+        .replace(/\{you\}/g, nameOf(who));
+}
+
+function promptFor(card, who) {
+    var raw = typeof card === "string" ? card : card[who];
+    return fillTokens(raw, who);
+}
+
+function isMirrored(card) { return typeof card !== "string"; }
+
+/* ---------- persistence ---------- */
+
+function save() {
+    try {
+        localStorage.setItem(STORE_KEY, JSON.stringify({
+            names: state.names,
+            deckId: state.deckId,
+            turn: state.turn,
+            piles: state.piles,
+            played: state.played,
+            reversals: state.reversals
+        }));
+    } catch (err) { /* private browsing, no big deal */ }
+}
+
+function load() {
+    try {
+        var raw = localStorage.getItem(STORE_KEY);
+        if (!raw) return null;
+        return JSON.parse(raw);
+    } catch (err) {
+        return null;
+    }
+}
+
+/* ---------- screen wiring ---------- */
+
+function buildModeList() {
+    el.modeList.innerHTML = "";
+    DECK_ORDER.forEach(function (id) {
+        var deck = DECKS[id];
+        var btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "mode";
+        btn.setAttribute("aria-pressed", id === state.deckId ? "true" : "false");
+        btn.dataset.deck = id;
+        btn.innerHTML =
+            '<span class="mode-top">' +
+                '<span class="mode-name">' + deck.name + "</span>" +
+                '<span class="mode-count">' + deck.cards.length + " cards</span>" +
+            "</span>" +
+            '<span class="mode-tag">' + deck.tagline + "</span>";
+        btn.addEventListener("click", function () { selectDeck(id); });
+        el.modeList.appendChild(btn);
+    });
+}
+
+function selectDeck(id) {
+    state.deckId = id;
+    Array.prototype.forEach.call(el.modeList.children, function (node) {
+        node.setAttribute("aria-pressed", node.dataset.deck === id ? "true" : "false");
+    });
+}
+
+function showScreen(which) {
+    el.setup.classList.toggle("active", which === "setup");
+    el.game.classList.toggle("active", which === "game");
+    window.scrollTo(0, 0);
+}
+
+function toast(msg) {
+    el.toast.textContent = msg;
+    el.toast.classList.add("show");
+    clearTimeout(toast.timer);
+    toast.timer = setTimeout(function () {
+        el.toast.classList.remove("show");
+    }, 2600);
+}
+
+/* ---------- game flow ---------- */
+
+function startGame() {
+    state.names.dad = el.nameDad.value;
+    state.names.kid = el.nameKid.value;
+    if (!state.piles[state.deckId]) state.piles[state.deckId] = freshPile(state.deckId);
+    state.current = null;
+    showScreen("game");
+    renderGame();
+    requestWakeLock();
+    save();
+}
+
+function switchDeck(id) {
+    state.deckId = id;
+    if (!state.piles[id]) state.piles[id] = freshPile(id);
+    state.reversals = { dad: REVERSALS_PER_DECK, kid: REVERSALS_PER_DECK };
+    state.current = null;
+    renderGame();
+    save();
+}
+
+function rollRunIn() {
+    if (!DECKS[state.deckId].runIns) return false;
+    if (state.runInCooldown > 0) {
+        state.runInCooldown--;
+        return false;
+    }
+    if (Math.random() < 0.14) {
+        state.runInCooldown = 3;
+        return true;
+    }
+    return false;
+}
+
+function drawCard() {
+    if (rollRunIn()) {
+        state.current = {
+            kind: "runin",
+            text: RUN_INS[Math.floor(Math.random() * RUN_INS.length)],
+            answeredBy: state.turn,
+            mirrored: false
+        };
+    } else {
+        var pile = state.piles[state.deckId];
+        if (!pile || !pile.length) {
+            state.piles[state.deckId] = freshPile(state.deckId);
+            pile = state.piles[state.deckId];
+            toast("Deck reshuffled — running it back.");
+        }
+        var index = pile.shift();
+        var card = DECKS[state.deckId].cards[index];
+        state.current = {
+            kind: "question",
+            index: index,
+            text: promptFor(card, state.turn),
+            answeredBy: state.turn,
+            mirrored: isMirrored(card),
+            otherText: isMirrored(card) ? promptFor(card, other(state.turn)) : null
+        };
+    }
+    renderGame();
+    save();
+}
+
+function nextTurn() {
+    var wasRunIn = state.current && state.current.kind === "runin";
+    state.played++;
+    // A run-in is a bonus, not a stolen turn — the drawer still owes a real card.
+    if (!wasRunIn) state.turn = other(state.turn);
+    state.current = null;
+    renderGame();
+    save();
+}
+
+function tapOut() {
+    if (!state.current) return;
+    state.current = null;
+    renderGame();
+    toast("Tapped out. Nothing owed — draw another.");
+    save();
+}
+
+function reversal() {
+    var card = state.current;
+    if (!card || card.reversed) return;
+    var who = state.turn;
+    if (state.reversals[who] <= 0) {
+        toast("No reversals left this deck.");
+        return;
+    }
+    state.reversals[who]--;
+    card.reversed = true;
+    card.answeredBy = other(who);
+    if (card.mirrored) {
+        var swap = card.text;
+        card.text = card.otherText;
+        card.otherText = swap;
+    }
+    renderGame();
+    toast("Reversed. " + nameOf(other(who)) + " answers first.");
+    save();
+}
+
+/* ---------- rendering ---------- */
+
+function renderGame() {
+    var deck = DECKS[state.deckId];
+    var card = state.current;
+    var drawer = state.turn;
+
+    el.deckLabel.textContent = deck.name;
+    el.metaPlayed.textContent = state.played + (state.played === 1 ? " card played" : " cards played");
+    el.metaLeft.textContent = (state.piles[state.deckId] || []).length + " left in " + deck.name;
+
+    if (!card) {
+        el.turnName.textContent = nameOf(drawer);
+        el.turnSub.textContent = "Your draw";
+        el.card.className = "card empty";
+        el.card.innerHTML = '<p class="card-prompt">Hand the phone over and tap <strong>Draw a Card</strong>.</p>';
+        el.drawBtn.textContent = "Draw a Card";
+        el.drawBtn.onclick = drawCard;
+        el.reverseBtn.disabled = true;
+        el.tapBtn.disabled = true;
+        el.reverseBtn.textContent = "Reversal (" + state.reversals[drawer] + ")";
+        return;
+    }
+
+    var answerer = card.answeredBy;
+    el.card.className = "card" + (card.kind === "runin" ? " runin" : "");
+
+    var kicker, follow;
+    if (card.kind === "runin") {
+        kicker = "Run-in!";
+        follow = "Both of you. Nobody gets out of this one.";
+        el.turnName.textContent = "Both of you";
+        el.turnSub.textContent = "Interference — nobody loses a turn over it";
+    } else {
+        el.turnName.textContent = nameOf(answerer);
+        kicker = deck.name + (card.reversed ? " · Reversed" : "");
+        el.turnSub.textContent = card.reversed ? "Answering first (reversed)" : "Answers first";
+        if (card.mirrored) {
+            follow = "Then " + nameOf(other(answerer)) + " answers their side: \u201c" + card.otherText + "\u201d";
+        } else {
+            follow = "Then " + nameOf(other(answerer)) + " answers the same question.";
+        }
+    }
+
+    el.card.innerHTML =
+        '<div class="card-kicker">' + kicker + "</div>" +
+        '<p class="card-prompt">' + escapeHtml(card.text) + "</p>" +
+        '<p class="card-follow">' + escapeHtml(follow) + "</p>";
+
+    el.drawBtn.textContent = card.kind === "runin"
+        ? "Done → " + nameOf(drawer) + " still draws"
+        : "Both answered → over to " + nameOf(other(drawer));
+    el.drawBtn.onclick = nextTurn;
+    el.tapBtn.disabled = false;
+    el.reverseBtn.disabled = card.kind === "runin" || card.reversed || state.reversals[drawer] <= 0;
+    el.reverseBtn.textContent = "Reversal (" + state.reversals[drawer] + ")";
+}
+
+function escapeHtml(text) {
+    return String(text)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;");
+}
+
+/* ---------- deck sheet ---------- */
+
+function openSheet() {
+    el.sheetModes.innerHTML = "";
+    DECK_ORDER.forEach(function (id) {
+        var deck = DECKS[id];
+        var left = (state.piles[id] || DECKS[id].cards.map(function (_, i) { return i; })).length;
+        var btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "mode";
+        btn.dataset.current = id === state.deckId ? "true" : "false";
+        btn.setAttribute("aria-pressed", id === state.deckId ? "true" : "false");
+        btn.innerHTML =
+            '<span class="mode-top">' +
+                '<span class="mode-name">' + deck.name + "</span>" +
+                '<span class="mode-count">' + left + " left</span>" +
+            "</span>" +
+            '<span class="mode-tag">' + deck.tagline + "</span>";
+        btn.addEventListener("click", function () {
+            closeSheet();
+            if (id === state.deckId) return;
+            switchDeck(id);
+            toast("Now playing: " + deck.name);
+        });
+        el.sheetModes.appendChild(btn);
+    });
+    el.sheet.hidden = false;
+}
+
+function closeSheet() { el.sheet.hidden = true; }
+
+/* ---------- keep the screen on ---------- */
+
+function requestWakeLock() {
+    if (!("wakeLock" in navigator)) return;
+    navigator.wakeLock.request("screen").then(function (lock) {
+        wakeLock = lock;
+        lock.addEventListener("release", function () { wakeLock = null; });
+    }).catch(function () { /* not allowed here, fine */ });
+}
+
+document.addEventListener("visibilitychange", function () {
+    if (document.visibilityState === "visible" && !wakeLock && el.game.classList.contains("active")) {
+        requestWakeLock();
+    }
+});
+
+/* ---------- boot ---------- */
+
+function init() {
+    el.setup = $("setup");
+    el.game = $("game");
+    el.modeList = $("mode-list");
+    el.nameDad = $("name-dad");
+    el.nameKid = $("name-kid");
+    el.startBtn = $("start-btn");
+    el.deckLabel = $("deck-label");
+    el.menuBtn = $("menu-btn");
+    el.turnName = $("turn-name");
+    el.turnSub = $("turn-sub");
+    el.card = $("card");
+    el.drawBtn = $("draw-btn");
+    el.reverseBtn = $("reverse-btn");
+    el.tapBtn = $("tap-btn");
+    el.closerBtn = $("closer-btn");
+    el.metaPlayed = $("meta-played");
+    el.metaLeft = $("meta-left");
+    el.toast = $("toast");
+    el.sheet = $("sheet");
+    el.sheetModes = $("sheet-modes");
+
+    var saved = load();
+    if (saved) {
+        state.names = saved.names || state.names;
+        state.deckId = DECKS[saved.deckId] ? saved.deckId : "main";
+        state.turn = saved.turn === "kid" ? "kid" : "dad";
+        state.piles = saved.piles || {};
+        state.played = saved.played || 0;
+        state.reversals = saved.reversals || state.reversals;
+        el.nameDad.value = state.names.dad;
+        el.nameKid.value = state.names.kid;
+    }
+
+    buildModeList();
+
+    el.startBtn.addEventListener("click", startGame);
+    el.menuBtn.addEventListener("click", openSheet);
+    $("sheet-close").addEventListener("click", closeSheet);
+    $("sheet-backdrop").addEventListener("click", closeSheet);
+    $("sheet-setup").addEventListener("click", function () {
+        closeSheet();
+        buildModeList();
+        showScreen("setup");
+    });
+    el.reverseBtn.addEventListener("click", reversal);
+    el.tapBtn.addEventListener("click", tapOut);
+    el.closerBtn.addEventListener("click", function () {
+        switchDeck("lastride");
+        toast("The Last Ride. Eight cards to the exit.");
+    });
+
+    if (state.played > 0) {
+        el.startBtn.textContent = "Pick up where we left off";
+    }
+}
+
+document.addEventListener("DOMContentLoaded", init);
+</script>
+</body>
+</html>

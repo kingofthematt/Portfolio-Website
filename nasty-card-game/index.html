@@ -1,0 +1,1109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#0a0506">
+    <meta name="robots" content="noindex">
+    <title>Filth — A Nasty Two-Player Card Game</title>
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230a0506'/%3E%3Ccircle cx='16' cy='16' r='8' fill='%23e11d48'/%3E%3C/svg%3E">
+    <style>
+        :root {
+            --bg: #0a0506;
+            --bg-lift: #16090c;
+            --hot: #e11d48;
+            --hot-deep: #9f1239;
+            --blush: #fda4af;
+            --card: #fff5f6;
+            --card-ink: #1a0a0d;
+            --muted: #c4a0a6;
+            --line: rgba(255, 255, 255, 0.12);
+            --font: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+        }
+
+        * { box-sizing: border-box; }
+
+        html, body { margin: 0; padding: 0; min-height: 100%; }
+
+        body {
+            font-family: var(--font);
+            background: var(--bg);
+            background-image:
+                radial-gradient(800px 420px at 50% -10%, rgba(225, 29, 72, 0.28), transparent 70%),
+                radial-gradient(500px 360px at 100% 100%, rgba(159, 18, 57, 0.22), transparent 70%);
+            background-attachment: fixed;
+            color: #fff;
+            -webkit-text-size-adjust: 100%;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .wrap {
+            max-width: 620px;
+            margin: 0 auto;
+            padding: 20px 18px 40px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .kicker {
+            font-size: 0.72rem;
+            letter-spacing: 0.18em;
+            text-transform: uppercase;
+            color: var(--blush);
+            font-weight: 700;
+        }
+
+        .btn {
+            font-family: var(--font);
+            font-size: 1.05rem;
+            font-weight: 700;
+            border: none;
+            border-radius: 14px;
+            padding: 18px 22px;
+            width: 100%;
+            cursor: pointer;
+            transition: transform 0.15s ease, filter 0.15s ease;
+        }
+
+        .btn:active { transform: scale(0.98); }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--hot) 0%, var(--hot-deep) 100%);
+            color: #fff;
+            box-shadow: 0 10px 28px rgba(225, 29, 72, 0.35);
+        }
+
+        .btn-ghost {
+            background: rgba(255, 255, 255, 0.07);
+            color: #fff;
+            border: 1px solid var(--line);
+            font-size: 0.95rem;
+            padding: 14px 18px;
+        }
+
+        .btn-ghost:disabled { opacity: 0.35; cursor: default; }
+
+        .row { display: flex; gap: 10px; }
+        .row > * { flex: 1; }
+
+        .screen { display: none; flex: 1; flex-direction: column; }
+        .screen.active { display: flex; }
+
+        .title-block { text-align: center; padding: 8px 0 22px; }
+
+        .title-block h1 {
+            font-size: 3rem;
+            line-height: 1;
+            margin: 10px 0 12px;
+            font-weight: 800;
+            letter-spacing: -0.03em;
+            text-transform: uppercase;
+        }
+
+        .title-block h1 span {
+            display: block;
+            color: var(--blush);
+            font-size: 1.05rem;
+            letter-spacing: 0.22em;
+            margin-top: 10px;
+            font-weight: 700;
+        }
+
+        .title-block p {
+            color: var(--muted);
+            font-size: 1rem;
+            line-height: 1.6;
+            margin: 0 auto;
+            max-width: 42ch;
+        }
+
+        .panel {
+            background: var(--bg-lift);
+            border: 1px solid var(--line);
+            border-radius: 18px;
+            padding: 20px;
+            margin-bottom: 14px;
+        }
+
+        .panel h2 {
+            font-size: 0.78rem;
+            letter-spacing: 0.16em;
+            text-transform: uppercase;
+            color: var(--muted);
+            margin: 0 0 14px;
+            font-weight: 700;
+        }
+
+        .name-grid { display: flex; gap: 12px; }
+        .name-field { flex: 1; }
+
+        .name-field label {
+            display: block;
+            font-size: 0.8rem;
+            color: var(--muted);
+            margin-bottom: 6px;
+        }
+
+        .name-field input, .safeword-field input {
+            width: 100%;
+            font-family: var(--font);
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: #fff;
+            background: rgba(0, 0, 0, 0.35);
+            border: 1px solid var(--line);
+            border-radius: 12px;
+            padding: 14px;
+        }
+
+        .name-field input:focus, .safeword-field input:focus {
+            outline: none;
+            border-color: var(--hot);
+        }
+
+        .consent {
+            display: flex;
+            gap: 10px;
+            align-items: flex-start;
+            color: var(--muted);
+            font-size: 0.9rem;
+            line-height: 1.5;
+            margin: 0;
+        }
+
+        .consent input { margin-top: 3px; flex-shrink: 0; }
+
+        .modes { display: flex; flex-direction: column; gap: 10px; }
+
+        .mode {
+            display: block;
+            width: 100%;
+            text-align: left;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid var(--line);
+            border-radius: 14px;
+            padding: 16px;
+            cursor: pointer;
+            font-family: var(--font);
+            color: #fff;
+        }
+
+        .mode[aria-pressed="true"] {
+            border-color: var(--hot);
+            background: rgba(225, 29, 72, 0.16);
+        }
+
+        .mode-top {
+            display: flex;
+            align-items: baseline;
+            justify-content: space-between;
+            gap: 10px;
+        }
+
+        .mode-name { font-size: 1.1rem; font-weight: 800; }
+        .mode-count { font-size: 0.75rem; color: var(--muted); white-space: nowrap; }
+        .mode-tag { display: block; font-size: 0.9rem; color: var(--muted); line-height: 1.45; margin-top: 5px; }
+
+        details.rules {
+            border: 1px solid var(--line);
+            border-radius: 14px;
+            padding: 0 18px;
+            margin-bottom: 14px;
+            background: rgba(255, 255, 255, 0.03);
+        }
+
+        details.rules summary {
+            padding: 16px 0;
+            cursor: pointer;
+            font-weight: 700;
+            font-size: 0.95rem;
+        }
+
+        details.rules ol {
+            margin: 0 0 18px;
+            padding-left: 20px;
+            color: var(--muted);
+            line-height: 1.7;
+            font-size: 0.95rem;
+        }
+
+        .safety {
+            display: flex;
+            gap: 10px;
+            align-items: flex-start;
+            color: var(--muted);
+            font-size: 0.85rem;
+            line-height: 1.5;
+            margin: 16px 2px 0;
+        }
+
+        .topbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 18px;
+        }
+
+        .deck-label {
+            font-size: 0.72rem;
+            letter-spacing: 0.16em;
+            text-transform: uppercase;
+            color: var(--muted);
+            font-weight: 700;
+        }
+
+        .icon-btn {
+            background: rgba(255, 255, 255, 0.07);
+            border: 1px solid var(--line);
+            color: #fff;
+            border-radius: 10px;
+            padding: 8px 14px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            font-family: var(--font);
+            cursor: pointer;
+        }
+
+        .turn { text-align: center; margin-bottom: 16px; }
+
+        .turn-name {
+            font-size: 2.1rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: -0.01em;
+            line-height: 1.1;
+        }
+
+        .turn-sub { color: var(--muted); font-size: 0.9rem; margin-top: 4px; }
+
+        .card-stage {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 6px 0 18px;
+        }
+
+        .card {
+            width: 100%;
+            background: var(--card);
+            color: var(--card-ink);
+            border-radius: 22px;
+            padding: 30px 26px;
+            min-height: 260px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            box-shadow: 0 22px 50px rgba(0, 0, 0, 0.55);
+            border-top: 7px solid var(--hot);
+            animation: deal 0.32s ease;
+        }
+
+        @keyframes deal {
+            from { opacity: 0; transform: translateY(14px) rotate(-1.2deg); }
+            to { opacity: 1; transform: none; }
+        }
+
+        .card.timed { border-top-color: #f59e0b; background: #fff8eb; }
+        .card.empty {
+            background: rgba(255, 255, 255, 0.05);
+            color: #fff;
+            border: 1px dashed var(--line);
+            border-top: 1px dashed var(--line);
+            box-shadow: none;
+            text-align: center;
+            animation: none;
+        }
+
+        .card-kicker {
+            font-size: 0.7rem;
+            letter-spacing: 0.18em;
+            text-transform: uppercase;
+            font-weight: 800;
+            color: var(--hot-deep);
+            margin-bottom: 14px;
+        }
+
+        .card.timed .card-kicker { color: #b45309; }
+
+        .card-prompt {
+            font-size: 1.5rem;
+            line-height: 1.35;
+            font-weight: 700;
+            margin: 0;
+        }
+
+        .card-follow {
+            margin: 18px 0 0;
+            padding-top: 14px;
+            border-top: 1px solid rgba(0, 0, 0, 0.1);
+            font-size: 0.95rem;
+            line-height: 1.5;
+            color: #6b4a50;
+        }
+
+        .timer {
+            margin-top: 18px;
+            font-size: 2.4rem;
+            font-weight: 800;
+            letter-spacing: -0.03em;
+            color: var(--hot-deep);
+            font-variant-numeric: tabular-nums;
+        }
+
+        .card.timed .timer { color: #b45309; }
+
+        .card.empty .card-prompt { font-size: 1.15rem; font-weight: 500; color: var(--muted); }
+
+        .controls { display: flex; flex-direction: column; gap: 10px; }
+
+        .meta {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+            color: var(--muted);
+            font-size: 0.78rem;
+            margin-top: 14px;
+            padding-top: 12px;
+            border-top: 1px solid var(--line);
+        }
+
+        .sheet {
+            position: fixed;
+            inset: 0;
+            z-index: 60;
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+        }
+
+        .sheet[hidden] { display: none; }
+
+        .sheet-backdrop {
+            position: absolute;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.66);
+        }
+
+        .sheet-panel {
+            position: relative;
+            width: 100%;
+            max-width: 620px;
+            background: var(--bg-lift);
+            border: 1px solid var(--line);
+            border-bottom: none;
+            border-radius: 22px 22px 0 0;
+            padding: 22px 18px 26px;
+            max-height: 88vh;
+            overflow-y: auto;
+        }
+
+        .sheet-head {
+            position: sticky;
+            top: -22px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            background: var(--bg-lift);
+            padding: 4px 0 14px;
+        }
+
+        .sheet-head h2 {
+            font-size: 0.78rem;
+            letter-spacing: 0.16em;
+            text-transform: uppercase;
+            color: var(--muted);
+            margin: 0;
+            font-weight: 700;
+        }
+
+        .sheet-head-actions { display: flex; gap: 8px; }
+
+        .toast {
+            position: fixed;
+            left: 50%;
+            bottom: 22px;
+            transform: translateX(-50%) translateY(120%);
+            background: var(--hot);
+            color: #fff;
+            font-weight: 700;
+            font-size: 0.9rem;
+            padding: 13px 20px;
+            border-radius: 999px;
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.45);
+            transition: transform 0.28s ease;
+            z-index: 70;
+            max-width: 90vw;
+            text-align: center;
+        }
+
+        .toast.show { transform: translateX(-50%) translateY(0); }
+
+        @media (max-width: 380px) {
+            .title-block h1 { font-size: 2.3rem; }
+            .card-prompt { font-size: 1.3rem; }
+            .turn-name { font-size: 1.8rem; }
+            .name-grid { flex-direction: column; }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            * { animation: none !important; transition: none !important; }
+        }
+    </style>
+</head>
+<body>
+<div class="wrap">
+
+    <section id="setup" class="screen active">
+        <div class="title-block">
+            <div class="kicker">18+ · Two consenting adults · Safeword always wins</div>
+            <h1>Filth<span>Do the card. Then they do you.</span></h1>
+            <p>You draw. You get used. Then they draw and you return the favor. Timed, filthy, and stoppable the second anyone says the word.</p>
+        </div>
+
+        <div class="panel">
+            <h2>Who's playing</h2>
+            <div class="name-grid">
+                <div class="name-field">
+                    <label for="name-a">Player 1</label>
+                    <input id="name-a" type="text" value="You" maxlength="14" autocomplete="off" spellcheck="false">
+                </div>
+                <div class="name-field">
+                    <label for="name-b">Player 2</label>
+                    <input id="name-b" type="text" value="Them" maxlength="14" autocomplete="off" spellcheck="false">
+                </div>
+            </div>
+        </div>
+
+        <div class="panel">
+            <h2>Safeword</h2>
+            <div class="safeword-field">
+                <input id="safeword" type="text" value="Red" maxlength="20" autocomplete="off" spellcheck="false">
+            </div>
+        </div>
+
+        <div class="panel">
+            <h2>Pick a deck</h2>
+            <div class="modes" id="mode-list"></div>
+        </div>
+
+        <details class="rules">
+            <summary>House rules</summary>
+            <ol>
+                <li><strong>Drawer is the one who gets it.</strong> You draw the card. The other person does the thing to you. Then they draw, and you do the thing to them.</li>
+                <li><strong>Timed cards mean timed cards.</strong> When the clock is on the card, start it, stay on it until it hits zero, then stop.</li>
+                <li><strong>Pass</strong> skips the card with no argument. <strong>The safeword stops the whole night.</strong> Instantly. Clothes can stay off; the game is over.</li>
+                <li><strong>Swap</strong> (3 per deck) flips who receives the act. Use it if you want to give instead of take, or the other way around.</li>
+                <li><strong>Afterglow</strong> is the closer. Save it for when you're wrecked and still talking.</li>
+                <li>This is for two adults who already want each other. If either of you is drunk past consent, put the phone down.</li>
+            </ol>
+        </details>
+
+        <label class="consent">
+            <input id="consent" type="checkbox">
+            <span>We're both 18+, we both want this, and the safeword ends it with no debate.</span>
+        </label>
+
+        <button id="start-btn" class="btn btn-primary" style="margin-top:14px">Start Fucking Around</button>
+
+        <p class="safety">
+            <span aria-hidden="true">🔒</span>
+            <span>Not linked from the rest of the site. Private tab recommended. Progress stays on this phone only.</span>
+        </p>
+    </section>
+
+    <section id="game" class="screen">
+        <div class="topbar">
+            <div class="deck-label" id="deck-label">Main Event</div>
+            <button id="menu-btn" class="icon-btn" type="button">Decks</button>
+        </div>
+
+        <div class="turn">
+            <div class="turn-name" id="turn-name">You</div>
+            <div class="turn-sub" id="turn-sub">Your draw — they do you</div>
+        </div>
+
+        <div class="card-stage">
+            <div class="card empty" id="card">
+                <p class="card-prompt">Tap <strong>Draw a Card</strong> when you're ready to get used.</p>
+            </div>
+        </div>
+
+        <div class="controls">
+            <button id="draw-btn" class="btn btn-primary">Draw a Card</button>
+            <div class="row">
+                <button id="timer-btn" class="btn btn-ghost" type="button" disabled>Start timer</button>
+                <button id="swap-btn" class="btn btn-ghost" type="button">Swap</button>
+            </div>
+            <div class="row">
+                <button id="pass-btn" class="btn btn-ghost" type="button">Pass</button>
+                <button id="safe-btn" class="btn btn-ghost" type="button">Safeword</button>
+            </div>
+            <button id="closer-btn" class="btn btn-ghost" type="button">Wrap it up → Afterglow</button>
+        </div>
+
+        <div class="meta">
+            <span id="meta-played">0 cards played</span>
+            <span id="meta-left">—</span>
+        </div>
+    </section>
+
+</div>
+
+<div class="sheet" id="sheet" hidden>
+    <div class="sheet-backdrop" id="sheet-backdrop"></div>
+    <div class="sheet-panel" role="dialog" aria-modal="true" aria-label="Switch decks">
+        <div class="sheet-head">
+            <h2>Switch decks</h2>
+            <div class="sheet-head-actions">
+                <button id="sheet-setup" class="icon-btn" type="button">Setup</button>
+                <button id="sheet-close" class="icon-btn" type="button">Close</button>
+            </div>
+        </div>
+        <div class="modes" id="sheet-modes"></div>
+    </div>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+var DECKS = {
+    main: {
+        name: "Main Event",
+        tagline: "The nasty deck. Timed sex, mouths, hands, and no mercy.",
+        cards: [
+            { text: "Fuck me for 30 seconds. Hard. Don't be cute.", seconds: 30 },
+            { text: "Suck me for 30 seconds. Eyes up. Hands on my hips.", seconds: 30 },
+            { text: "Fuck me from behind for 45 seconds. Pull my hair if I've got any.", seconds: 45 },
+            { text: "Ride me for 40 seconds. Grind, don't bounce like you're scared of it.", seconds: 40 },
+            { text: "Put my cock in your mouth and keep it there for 20 seconds. No bobbing. Just take it.", seconds: 20 },
+            { text: "Eat me for 45 seconds. Slow, then mean.", seconds: 45 },
+            { text: "Spit on it, then fuck me for 30 seconds with that spit as lube.", seconds: 30 },
+            { text: "Hold me down and fuck me for 40 seconds. I don't get to set the pace.", seconds: 40 },
+            { text: "Suck just the head for 25 seconds. Tongue it. Make it sloppy.", seconds: 25 },
+            { text: "Put two fingers in me and fuck me with them for 30 seconds.", seconds: 30 },
+            { text: "Fuck my thighs for 30 seconds like you're too horny to find the hole.", seconds: 30 },
+            { text: "Put my hand on your throat — no squeeze — and fuck me for 35 seconds while you look at me.", seconds: 35 },
+            { text: "Bend me over whatever's closest and give me 20 hard thrusts. Count them out loud.", seconds: 0 },
+            { text: "Suck me until I swear. You stop the second I actually curse.", seconds: 0 },
+            { text: "Sit on my face for 40 seconds. Don't hover. Sit.", seconds: 40 },
+            { text: "Jerk me with both hands for 30 seconds. Tight. Slow at the end.", seconds: 30 },
+            { text: "Lick from my hole to the tip in one wet stripe. Do it five times.", seconds: 0 },
+            { text: "Fuck my mouth for 20 seconds. Shallow. I tap your hip if I need air.", seconds: 20 },
+            { text: "Put it in and don't move for 20 seconds. Just stay buried.", seconds: 20 },
+            { text: "Rub my clit / head with two wet fingers for 40 seconds. No penetration.", seconds: 40 },
+            { text: "Bite my inner thigh, then suck a mark onto it.", seconds: 0 },
+            { text: "Talk filthy in my ear while you fuck me for 35 seconds. I want specifics.", seconds: 35 },
+            { text: "Put my balls / folds in your mouth and suck gently for 25 seconds.", seconds: 25 },
+            { text: "Use your throat on me for 15 seconds. If you gag, you stay.", seconds: 15 },
+            { text: "Fuck me against a wall or the car seat for 30 seconds. One foot off the ground if you can.", seconds: 30 },
+            { text: "Spit in my mouth, then kiss me like you meant it.", seconds: 0 },
+            { text: "Put three fingers in my mouth while you jerk / rub me for 30 seconds.", seconds: 30 },
+            { text: "Edge me for 45 seconds. Stop the second I start shaking.", seconds: 45 },
+            { text: "Fuck me missionary and pin my wrists for 40 seconds.", seconds: 40 },
+            { text: "Suck my nipples until they hurt, then kiss them better.", seconds: 0 },
+            { text: "Get on your knees and suck me like you're starving. 30 seconds.", seconds: 30 },
+            { text: "Put it in my ass / against my ass — only as far as I say yes to — and hold still for 15 seconds.", seconds: 15 },
+            { text: "Make me watch you touch yourself for 30 seconds, then shove it in me.", seconds: 30 },
+            { text: "Slap my ass hard enough to sting, then fuck the sting for 25 seconds.", seconds: 25 },
+            { text: "Use my cum / wetness as lube and keep going for 30 more seconds.", seconds: 30 },
+            { text: "Choke on it on purpose. One messy, wet attempt. Then wipe your chin on my stomach.", seconds: 0 },
+            { text: "Fuck me until one of us laughs. Then keep going through the laugh for 15 seconds.", seconds: 15 },
+            { text: "Put my legs over your shoulders and fold me in half for 30 seconds of deep, slow strokes.", seconds: 30 },
+            { text: "Suck your own taste off me for 20 seconds.", seconds: 20 },
+            { text: "Tell me exactly how you want to ruin me tonight, then do the first sentence of it for 30 seconds.", seconds: 30 }
+        ]
+    },
+    mouth: {
+        name: "Mouth",
+        tagline: "Tongues, throats, spit. If it isn't wet, you did it wrong.",
+        cards: [
+            { text: "Suck me for 45 seconds. No hands.", seconds: 45 },
+            { text: "Lick my hole like you're trying to get inside it. 30 seconds.", seconds: 30 },
+            { text: "Deepthroat as far as you actually can. Hold for 8 seconds.", seconds: 8 },
+            { text: "Spit on my cock / cunt, then spread it with your tongue.", seconds: 0 },
+            { text: "Suck my fingers like they're a dick. Get them dripping.", seconds: 0 },
+            { text: "Kiss me with my taste still in your mouth.", seconds: 0 },
+            { text: "Hum while you suck me for 20 seconds.", seconds: 20 },
+            { text: "Tongue-fuck me for 35 seconds. Don't be polite about it.", seconds: 35 },
+            { text: "Ice cube in your mouth, then suck me until it melts.", seconds: 0 },
+            { text: "Drool on it. I want a string. Then lick it back up.", seconds: 0 },
+            { text: "Suck one nipple and pinch the other until I make a sound.", seconds: 0 },
+            { text: "Put your tongue in my mouth and keep it there while you jerk / rub me for 25 seconds.", seconds: 25 },
+            { text: "Lick my perineum / taint slowly, like you've got nowhere else to be.", seconds: 0 },
+            { text: "Gag on it once on purpose, then smile at me with it still on your lip.", seconds: 0 },
+            { text: "Eat me from behind for 40 seconds. Face in it.", seconds: 40 }
+        ]
+    },
+    hands: {
+        name: "Hands",
+        tagline: "Fingers, fists-adjacent, messy wrists. No hiding behind oral.",
+        cards: [
+            { text: "Jerk me / rub me the exact way I show you for 40 seconds. Copy me.", seconds: 40 },
+            { text: "Two fingers, come-hither, 30 seconds. Don't speed up unless I beg.", seconds: 30 },
+            { text: "Spit in your palm and work me until it's loud.", seconds: 0 },
+            { text: "Put a finger in my ass / against it — only if I say yes — and jerk me at the same time for 25 seconds.", seconds: 25 },
+            { text: "Tease the head / clit with one fingertip for 30 seconds. Barely there.", seconds: 30 },
+            { text: "Slap my cock / mound lightly, then soothe it with a slow stroke.", seconds: 0 },
+            { text: "Finger me while I try to keep talking. 30 seconds. If I stop talking, you win.", seconds: 30 },
+            { text: "Use my hand to jerk / rub you. Make me do it the way you like for 35 seconds.", seconds: 35 },
+            { text: "Pinch, twist, then kiss every spot you just hurt.", seconds: 0 },
+            { text: "Get me right to the edge with your hand, then take it away and laugh at me.", seconds: 0 },
+            { text: "Fist the base / cup me and stroke only the top third for 30 seconds.", seconds: 30 },
+            { text: "Put both our hands on me at once. Race. First to make me moan wins.", seconds: 0 }
+        ]
+    },
+    positions: {
+        name: "Positions",
+        tagline: "Bend, fold, straddle, wreck. The furniture is part of the game.",
+        cards: [
+            { text: "Put me on all fours and fuck me for 40 seconds. Don't let me look back.", seconds: 40 },
+            { text: "Cowgirl. I ride, you hold my waist and pull me down onto it. 35 seconds.", seconds: 35 },
+            { text: "Stand me up, one leg hooked around you, and try to stay inside for 25 seconds.", seconds: 25 },
+            { text: "Missionary with my knees by my ears. Deep and slow for 30 seconds.", seconds: 30 },
+            { text: "Spoon-fuck me. One hand on my throat (no squeeze), one hand on my clit / cock. 40 seconds.", seconds: 40 },
+            { text: "I sit on the edge of something. You kneel and suck, then stand up and fuck the same spot.", seconds: 0 },
+            { text: "Prone bone. Flatten me. 30 seconds of weight and friction.", seconds: 30 },
+            { text: "Reverse cowgirl. I look away. You slap my ass every fifth stroke.", seconds: 0 },
+            { text: "Put my ankles on your shoulders and make me say your name before you start moving.", seconds: 0 },
+            { text: "Fuck me on the floor like we couldn't wait. 30 seconds, no pillow.", seconds: 30 },
+            { text: "Hold me in your lap facing you. Grind, don't thrust. 40 seconds.", seconds: 40 },
+            { text: "Against the door. If it rattles, you don't stop.", seconds: 0 }
+        ]
+    },
+    control: {
+        name: "Control",
+        tagline: "Orders, denial, praise, humiliation. Mean, then sweet.",
+        cards: [
+            { text: "I don't get to touch you for this whole card. You use me however you want for 45 seconds.", seconds: 45 },
+            { text: "Make me ask for it. I don't get it until I say the filthy version out loud.", seconds: 0 },
+            { text: "Call me your toy, then treat me like one for 30 seconds.", seconds: 30 },
+            { text: "Tell me I look ruined. Keep going until I agree.", seconds: 0 },
+            { text: "I have to keep my hands behind my back while you suck / fuck me for 30 seconds.", seconds: 30 },
+            { text: "Edge me twice. No orgasm. Then kiss my forehead like you're proud.", seconds: 0 },
+            { text: "Make me watch myself in a camera or a mirror while you do me for 30 seconds.", seconds: 30 },
+            { text: "Give me a degrading nickname and use it until the next card.", seconds: 0 },
+            { text: "I have to thank you after every thrust / lick for 20 seconds. Miss one and you start over.", seconds: 20 },
+            { text: "Hold my jaw, make me look at you, and tell me exactly what you're going to do to me next. Then do it.", seconds: 0 },
+            { text: "I come only if you say I can. This card is you deciding out loud.", seconds: 0 },
+            { text: "Put me on my knees. I stay there until you tell me I can get up.", seconds: 0 }
+        ]
+    },
+    afterglow: {
+        name: "Afterglow",
+        tagline: "The closer. Still filthy, then actually kind. Use it when you're done wrecking each other.",
+        cards: [
+            { text: "Kiss the part of me you just used like you're sorry and not sorry.", seconds: 0 },
+            { text: "Tell me the nastiest thing you thought while we were doing this, then hold me.", seconds: 0 },
+            { text: "Lick me clean. Slowly. Then get me water.", seconds: 0 },
+            { text: "One more lazy fuck / grind for 60 seconds. No proving anything.", seconds: 60 },
+            { text: "Say one thing I did that ruined you. Be specific.", seconds: 0 },
+            { text: "Put your mouth on me with zero agenda for 30 seconds. Just stay there.", seconds: 30 },
+            { text: "Ask what I still want. If I say nothing, spoon me anyway.", seconds: 0 },
+            { text: "The last card: we both say what we want next time, out loud, no jokes.", seconds: 0 }
+        ]
+    }
+};
+
+var DECK_ORDER = ["main", "mouth", "hands", "positions", "control", "afterglow"];
+var STORE_KEY = "filth.v1";
+var SWAPS_PER_DECK = 3;
+
+var state = {
+    names: { a: "You", b: "Them" },
+    safeword: "Red",
+    deckId: "main",
+    turn: "a",
+    piles: {},
+    played: 0,
+    swaps: { a: SWAPS_PER_DECK, b: SWAPS_PER_DECK },
+    current: null
+};
+
+var el = {};
+var wakeLock = null;
+var timerId = null;
+var timerLeft = 0;
+
+function $(id) { return document.getElementById(id); }
+function other(who) { return who === "a" ? "b" : "a"; }
+function nameOf(who) { return (state.names[who] || "").trim() || (who === "a" ? "Player 1" : "Player 2"); }
+
+function shuffle(list) {
+    var out = list.slice();
+    for (var i = out.length - 1; i > 0; i--) {
+        var j = Math.floor(Math.random() * (i + 1));
+        var tmp = out[i];
+        out[i] = out[j];
+        out[j] = tmp;
+    }
+    return out;
+}
+
+function freshPile(deckId) {
+    return shuffle(DECKS[deckId].cards.map(function (_, i) { return i; }));
+}
+
+function save() {
+    try {
+        localStorage.setItem(STORE_KEY, JSON.stringify({
+            names: state.names,
+            safeword: state.safeword,
+            deckId: state.deckId,
+            turn: state.turn,
+            piles: state.piles,
+            played: state.played,
+            swaps: state.swaps
+        }));
+    } catch (err) { /* ignore */ }
+}
+
+function load() {
+    try {
+        var raw = localStorage.getItem(STORE_KEY);
+        return raw ? JSON.parse(raw) : null;
+    } catch (err) { return null; }
+}
+
+function buildModeList() {
+    el.modeList.innerHTML = "";
+    DECK_ORDER.forEach(function (id) {
+        var deck = DECKS[id];
+        var btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "mode";
+        btn.setAttribute("aria-pressed", id === state.deckId ? "true" : "false");
+        btn.dataset.deck = id;
+        btn.innerHTML =
+            '<span class="mode-top">' +
+                '<span class="mode-name">' + deck.name + "</span>" +
+                '<span class="mode-count">' + deck.cards.length + " cards</span>" +
+            "</span>" +
+            '<span class="mode-tag">' + deck.tagline + "</span>";
+        btn.addEventListener("click", function () { selectDeck(id); });
+        el.modeList.appendChild(btn);
+    });
+}
+
+function selectDeck(id) {
+    state.deckId = id;
+    Array.prototype.forEach.call(el.modeList.children, function (node) {
+        node.setAttribute("aria-pressed", node.dataset.deck === id ? "true" : "false");
+    });
+}
+
+function showScreen(which) {
+    el.setup.classList.toggle("active", which === "setup");
+    el.game.classList.toggle("active", which === "game");
+    window.scrollTo(0, 0);
+}
+
+function toast(msg) {
+    el.toast.textContent = msg;
+    el.toast.classList.add("show");
+    clearTimeout(toast.timer);
+    toast.timer = setTimeout(function () { el.toast.classList.remove("show"); }, 2800);
+}
+
+function stopTimer() {
+    if (timerId) clearInterval(timerId);
+    timerId = null;
+    timerLeft = 0;
+}
+
+function tickTimer() {
+    timerLeft--;
+    var node = document.getElementById("timer-display");
+    if (node) node.textContent = formatTime(timerLeft);
+    if (timerLeft <= 0) {
+        stopTimer();
+        toast("Time. Hands off — next card.");
+        if (el.timerBtn) el.timerBtn.textContent = "Time's up";
+    }
+}
+
+function formatTime(sec) {
+    var m = Math.floor(sec / 60);
+    var s = sec % 60;
+    return (m > 0 ? m + ":" : "") + (s < 10 && m > 0 ? "0" : "") + s + (m > 0 ? "" : "s");
+}
+
+function startTimer() {
+    var card = state.current;
+    if (!card || !card.seconds) return;
+    stopTimer();
+    timerLeft = card.seconds;
+    var node = document.getElementById("timer-display");
+    if (node) node.textContent = formatTime(timerLeft);
+    el.timerBtn.textContent = "Running…";
+    el.timerBtn.disabled = true;
+    timerId = setInterval(tickTimer, 1000);
+}
+
+function startGame() {
+    if (!el.consent.checked) {
+        toast("Check the consent box first. That's the whole game.");
+        return;
+    }
+    state.names.a = el.nameA.value;
+    state.names.b = el.nameB.value;
+    state.safeword = (el.safeword.value || "Red").trim();
+    if (!state.piles[state.deckId]) state.piles[state.deckId] = freshPile(state.deckId);
+    state.current = null;
+    showScreen("game");
+    renderGame();
+    requestWakeLock();
+    save();
+}
+
+function switchDeck(id) {
+    stopTimer();
+    state.deckId = id;
+    if (!state.piles[id]) state.piles[id] = freshPile(id);
+    state.swaps = { a: SWAPS_PER_DECK, b: SWAPS_PER_DECK };
+    state.current = null;
+    renderGame();
+    save();
+}
+
+function drawCard() {
+    stopTimer();
+    var pile = state.piles[state.deckId];
+    if (!pile || !pile.length) {
+        state.piles[state.deckId] = freshPile(state.deckId);
+        pile = state.piles[state.deckId];
+        toast("Deck reshuffled. You're still not done.");
+    }
+    var index = pile.shift();
+    var card = DECKS[state.deckId].cards[index];
+    state.current = {
+        index: index,
+        text: card.text,
+        seconds: card.seconds || 0,
+        receiver: state.turn,
+        swapped: false
+    };
+    renderGame();
+    save();
+}
+
+function nextTurn() {
+    stopTimer();
+    state.played++;
+    state.turn = other(state.turn);
+    state.current = null;
+    renderGame();
+    save();
+}
+
+function passCard() {
+    if (!state.current) return;
+    stopTimer();
+    state.current = null;
+    renderGame();
+    toast("Passed. Nobody owes that one.");
+    save();
+}
+
+function swapRoles() {
+    var card = state.current;
+    if (!card || card.swapped) return;
+    var who = state.turn;
+    if (state.swaps[who] <= 0) {
+        toast("No swaps left this deck.");
+        return;
+    }
+    state.swaps[who]--;
+    card.swapped = true;
+    card.receiver = other(card.receiver);
+    renderGame();
+    toast("Swapped. " + nameOf(card.receiver) + " gets it now.");
+    save();
+}
+
+function safeword() {
+    stopTimer();
+    state.current = null;
+    renderGame();
+    toast(state.safeword + ". Game's over. Water, blanket, no debate.");
+    el.drawBtn.textContent = "Safeword used — back to setup";
+    el.drawBtn.onclick = function () {
+        showScreen("setup");
+        buildModeList();
+    };
+}
+
+function escapeHtml(text) {
+    return String(text)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;");
+}
+
+function renderGame() {
+    var deck = DECKS[state.deckId];
+    var card = state.current;
+    var drawer = state.turn;
+
+    el.deckLabel.textContent = deck.name;
+    el.metaPlayed.textContent = state.played + (state.played === 1 ? " card played" : " cards played");
+    el.metaLeft.textContent = (state.piles[state.deckId] || []).length + " left in " + deck.name;
+    el.safeBtn.textContent = "Safeword (" + state.safeword + ")";
+
+    if (!card) {
+        el.turnName.textContent = nameOf(drawer);
+        el.turnSub.textContent = "Your draw — they do you";
+        el.card.className = "card empty";
+        el.card.innerHTML = '<p class="card-prompt">Hand the phone over and tap <strong>Draw a Card</strong>.</p>';
+        el.drawBtn.textContent = "Draw a Card";
+        el.drawBtn.onclick = drawCard;
+        el.swapBtn.disabled = true;
+        el.passBtn.disabled = true;
+        el.timerBtn.disabled = true;
+        el.timerBtn.textContent = "Start timer";
+        el.swapBtn.textContent = "Swap (" + state.swaps[drawer] + ")";
+        return;
+    }
+
+    var receiver = card.receiver;
+    var giver = other(receiver);
+    el.turnName.textContent = nameOf(receiver);
+    el.turnSub.textContent = card.swapped
+        ? nameOf(giver) + " does this to " + nameOf(receiver) + " (swapped)"
+        : nameOf(giver) + " does this to " + nameOf(receiver);
+
+    var timed = card.seconds > 0;
+    el.card.className = "card" + (timed ? " timed" : "");
+    var kicker = deck.name + (card.swapped ? " · Swapped" : "") + (timed ? " · " + card.seconds + "s" : "");
+    var follow = nameOf(giver) + " does it. " + nameOf(receiver) + " takes it. Then " + nameOf(other(drawer)) + " draws.";
+    var timerHtml = timed
+        ? '<div class="timer" id="timer-display">' + formatTime(card.seconds) + "</div>"
+        : "";
+
+    el.card.innerHTML =
+        '<div class="card-kicker">' + escapeHtml(kicker) + "</div>" +
+        '<p class="card-prompt">' + escapeHtml(card.text) + "</p>" +
+        timerHtml +
+        '<p class="card-follow">' + escapeHtml(follow) + "</p>";
+
+    el.drawBtn.textContent = "Done → over to " + nameOf(other(drawer));
+    el.drawBtn.onclick = nextTurn;
+    el.passBtn.disabled = false;
+    el.swapBtn.disabled = card.swapped || state.swaps[drawer] <= 0;
+    el.swapBtn.textContent = "Swap (" + state.swaps[drawer] + ")";
+    el.timerBtn.disabled = !timed || timerId !== null;
+    el.timerBtn.textContent = timed ? (timerId ? "Running…" : "Start " + card.seconds + "s") : "No timer";
+}
+
+function openSheet() {
+    el.sheetModes.innerHTML = "";
+    DECK_ORDER.forEach(function (id) {
+        var deck = DECKS[id];
+        var left = (state.piles[id] || DECKS[id].cards.map(function (_, i) { return i; })).length;
+        var btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "mode";
+        btn.dataset.current = id === state.deckId ? "true" : "false";
+        btn.setAttribute("aria-pressed", id === state.deckId ? "true" : "false");
+        btn.innerHTML =
+            '<span class="mode-top">' +
+                '<span class="mode-name">' + deck.name + "</span>" +
+                '<span class="mode-count">' + left + " left</span>" +
+            "</span>" +
+            '<span class="mode-tag">' + deck.tagline + "</span>";
+        btn.addEventListener("click", function () {
+            closeSheet();
+            if (id === state.deckId) return;
+            switchDeck(id);
+            toast("Now playing: " + deck.name);
+        });
+        el.sheetModes.appendChild(btn);
+    });
+    el.sheet.hidden = false;
+}
+
+function closeSheet() { el.sheet.hidden = true; }
+
+function requestWakeLock() {
+    if (!("wakeLock" in navigator)) return;
+    navigator.wakeLock.request("screen").then(function (lock) {
+        wakeLock = lock;
+        lock.addEventListener("release", function () { wakeLock = null; });
+    }).catch(function () {});
+}
+
+document.addEventListener("visibilitychange", function () {
+    if (document.visibilityState === "visible" && !wakeLock && el.game && el.game.classList.contains("active")) {
+        requestWakeLock();
+    }
+});
+
+function init() {
+    el.setup = $("setup");
+    el.game = $("game");
+    el.modeList = $("mode-list");
+    el.nameA = $("name-a");
+    el.nameB = $("name-b");
+    el.safeword = $("safeword");
+    el.consent = $("consent");
+    el.startBtn = $("start-btn");
+    el.deckLabel = $("deck-label");
+    el.menuBtn = $("menu-btn");
+    el.turnName = $("turn-name");
+    el.turnSub = $("turn-sub");
+    el.card = $("card");
+    el.drawBtn = $("draw-btn");
+    el.timerBtn = $("timer-btn");
+    el.swapBtn = $("swap-btn");
+    el.passBtn = $("pass-btn");
+    el.safeBtn = $("safe-btn");
+    el.closerBtn = $("closer-btn");
+    el.metaPlayed = $("meta-played");
+    el.metaLeft = $("meta-left");
+    el.toast = $("toast");
+    el.sheet = $("sheet");
+    el.sheetModes = $("sheet-modes");
+
+    var saved = load();
+    if (saved) {
+        state.names = saved.names || state.names;
+        state.safeword = saved.safeword || "Red";
+        state.deckId = DECKS[saved.deckId] ? saved.deckId : "main";
+        state.turn = saved.turn === "b" ? "b" : "a";
+        state.piles = saved.piles || {};
+        state.played = saved.played || 0;
+        state.swaps = saved.swaps || state.swaps;
+        el.nameA.value = state.names.a;
+        el.nameB.value = state.names.b;
+        el.safeword.value = state.safeword;
+    }
+
+    buildModeList();
+    el.startBtn.addEventListener("click", startGame);
+    el.menuBtn.addEventListener("click", openSheet);
+    $("sheet-close").addEventListener("click", closeSheet);
+    $("sheet-backdrop").addEventListener("click", closeSheet);
+    $("sheet-setup").addEventListener("click", function () {
+        closeSheet();
+        buildModeList();
+        showScreen("setup");
+    });
+    el.timerBtn.addEventListener("click", startTimer);
+    el.swapBtn.addEventListener("click", swapRoles);
+    el.passBtn.addEventListener("click", passCard);
+    el.safeBtn.addEventListener("click", safeword);
+    el.closerBtn.addEventListener("click", function () {
+        switchDeck("afterglow");
+        toast("Afterglow. Be filthy, then be decent.");
+    });
+
+    if (state.played > 0) el.startBtn.textContent = "Pick up where we left off";
+}
+
+document.addEventListener("DOMContentLoaded", init);
+</script>
+</body>
+</html>
