@@ -1,4 +1,4 @@
-import { ACTS, SCRIPT, allCards } from "./cards.js";
+import { ACTS, DRAW, allCards } from "./cards.js";
 import { buildSession } from "./session.js";
 
 const KEY = "anticipation-hidden-v1";
@@ -30,8 +30,11 @@ const state = {
   revealed: false,
   showingSofter: false,
   ending: null,
+  gate: null,
   removed: loadRemoved(),
 };
+
+let gateTimer = 0;
 
 const app = document.querySelector("#app");
 
@@ -42,6 +45,7 @@ document.addEventListener("click", (event) => {
   if (action === "start") start();
   if (action === "flip") reveal();
   if (action === "next") advance();
+  if (action === "dismiss-gate") dismissGate();
   if (action === "softer") {
     state.showingSofter = true;
     render();
@@ -53,6 +57,7 @@ document.addEventListener("click", (event) => {
   if (action === "skip") advance();
   if (action === "hide") hideCurrent();
   if (action === "end") {
+    dismissGate();
     state.ending = "early";
     state.screen = "end";
     render();
@@ -69,6 +74,7 @@ document.addEventListener("click", (event) => {
     render();
   }
   if (action === "home") {
+    dismissGate();
     state.screen = "home";
     state.session = [];
     state.ending = null;
@@ -94,6 +100,7 @@ document.addEventListener("keydown", (event) => {
 render();
 
 function start() {
+  dismissGate();
   state.session = buildSession([...state.removed]);
   state.index = 0;
   state.revealed = false;
@@ -111,10 +118,31 @@ function reveal() {
 }
 
 function advance() {
+  if (state.gate) return;
   if (state.index >= state.session.length - 1) return;
+  const previous = current().act;
   state.index += 1;
   state.revealed = false;
   state.showingSofter = false;
+  const next = current();
+  if (next.act !== previous || next.kind === "finale") {
+    openGate(next.kind === "finale" ? "finale" : next.act);
+    return;
+  }
+  render();
+}
+
+function openGate(act) {
+  state.gate = act;
+  render();
+  clearTimeout(gateTimer);
+  gateTimer = setTimeout(dismissGate, 2200);
+}
+
+function dismissGate() {
+  clearTimeout(gateTimer);
+  if (!state.gate) return;
+  state.gate = null;
   render();
 }
 
@@ -214,14 +242,14 @@ function renderHome() {
 
   return `<p class="eyebrow">First night</p>
     <h1>Anticipation</h1>
-    <p class="lede">${SCRIPT.length} cards. Small talk first. Then the dares get explicit, and passing one costs a layer.</p>
+    <p class="lede">${DRAW} cards a stage, drawn from a bigger pile. Then it moves on.</p>
     <p class="adult">For two adults who both want this. End the night whenever you want. Passing a dare costs a layer.</p>
     <button type="button" class="btn btn-primary" data-action="start">Start tonight</button>
     <ol class="arc">
-      <li class="act-surface"><strong>Surface</strong><span>First impressions, hobbies, and the easy questions.</span></li>
-      <li class="act-deeper"><strong>Deeper</strong><span>A little more personal, then a kiss that doesn't stay polite.</span></li>
-      <li class="act-tease"><strong>Tease</strong><span>Ice, mouths, and hands. Skip it and a layer comes off.</span></li>
-      <li class="act-almost"><strong>Almost</strong><span>Fingering, a faceless photo, a nude or a layer, then a shower show.</span></li>
+      <li class="act-surface"><strong>Surface</strong><span>First impressions, hobbies, easy questions. Eight, then the next stage.</span></li>
+      <li class="act-deeper"><strong>Deeper</strong><span>More personal, then a kiss that doesn't stay polite.</span></li>
+      <li class="act-tease"><strong>Tease</strong><span>Ice, a question you wouldn't usually ask, mouths and hands.</span></li>
+      <li class="act-almost"><strong>Almost</strong><span>Fingering, a faceless photo, a nude or a layer, a shower show.</span></li>
     </ol>
     ${hiddenBlock}`;
 }
@@ -293,7 +321,20 @@ function renderPlay(animateIn = false) {
       </div>
     </div>
     <div class="play-actions">${actions}</div>
+    ${state.gate ? renderGate(state.gate) : ""}
   </section>`;
+}
+
+function renderGate(act) {
+  const finale = act === "finale";
+  const name = finale ? "Last card" : ACTS[act].name;
+  const line = finale ? "Both of you have to want it." : ACTS[act].gate;
+  return `<div class="stage-gate act-${esc(finale ? "almost" : act)}" data-action="dismiss-gate" role="button" tabindex="0">
+    <p class="stage-kicker">Next</p>
+    <h2>${esc(name)}</h2>
+    <span class="stage-sweep"></span>
+    <p>${esc(line)}</p>
+  </div>`;
 }
 
 function renderEnd() {

@@ -151,6 +151,98 @@ h1 {
   line-height: 1.4;
 }
 
+.stage-gate {
+  position: fixed;
+  inset: 0;
+  z-index: 8;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 32px;
+  text-align: center;
+  background: #0a0e17;
+  animation: gate-fade 0.35s ease both;
+}
+
+.stage-gate::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(420px 280px at 50% 42%, rgba(255, 138, 115, 0.34), transparent 70%);
+  pointer-events: none;
+}
+
+.stage-gate h2,
+.stage-gate p,
+.stage-kicker,
+.stage-sweep {
+  position: relative;
+  z-index: 1;
+}
+
+.stage-gate h2 {
+  margin: 0;
+  font-family: Fraunces, Georgia, serif;
+  font-size: clamp(3rem, 12vw, 4.6rem);
+  font-weight: 500;
+  letter-spacing: -0.04em;
+  line-height: 0.95;
+  animation: gate-title 0.7s cubic-bezier(0.16, 0.84, 0.24, 1) both;
+}
+
+.stage-kicker {
+  margin: 0 0 10px;
+  color: var(--gold);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  animation: gate-title 0.5s ease both;
+}
+
+.stage-sweep {
+  width: min(180px, 46vw);
+  height: 2px;
+  margin: 18px 0 16px;
+  background: linear-gradient(90deg, transparent, var(--gold), var(--flame), transparent);
+  transform-origin: center;
+  animation: gate-line 0.8s 0.15s cubic-bezier(0.16, 0.84, 0.24, 1) both;
+}
+
+.stage-gate p:last-child {
+  margin: 0;
+  max-width: 16rem;
+  color: var(--text);
+  font-size: 1.05rem;
+  animation: gate-title 0.7s 0.28s ease both;
+}
+
+.stage-gate.act-deeper h2 { color: var(--amber); }
+.stage-gate.act-tease h2 { color: var(--flame); }
+.stage-gate.act-almost h2 { color: var(--rose); }
+
+@keyframes gate-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes gate-title {
+  from { opacity: 0; transform: translateY(22px); filter: blur(8px); }
+  to { opacity: 1; transform: none; filter: none; }
+}
+
+@keyframes gate-line {
+  from { opacity: 0; transform: scaleX(0.15); }
+  to { opacity: 1; transform: scaleX(1); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .stage-gate, .stage-gate h2, .stage-kicker, .stage-sweep, .stage-gate p {
+    animation: none;
+  }
+}
+
 .act-surface strong { color: var(--gold); }
 .act-deeper strong { color: var(--amber); }
 .act-tease strong { color: var(--flame); }
