@@ -1,4 +1,4 @@
-import { ACTS, allCards } from "./cards.js";
+import { ACTS, SCRIPT, allCards } from "./cards.js";
 import { buildSession } from "./session.js";
 
 const KEY = "anticipation-hidden-v1";
@@ -11,7 +11,7 @@ const ENDINGS = {
   },
   shower: {
     title: "Go start the water.",
-    body: "One of you gets in. The other stays close enough to watch — this is the first time you get to look on purpose. Turn, slow down, or come to the glass when they ask. They can step in with you, or stay there and tell you what they want when you get out. Leave this phone outside the bathroom.",
+    body: "One of you gets in. The other stays and watches: turn when they say, soap slowly, come to the glass. They can step in with you. Leave this phone outside the bathroom. If you won't do the show, a layer comes off where they can see.",
   },
   film: {
     title: "A short film, then it's gone.",
@@ -214,14 +214,14 @@ function renderHome() {
 
   return `<p class="eyebrow">First night</p>
     <h1>Anticipation</h1>
-    <p class="lede">Twenty-six cards. Start with small talk, go a little deeper, then decide how far the night goes.</p>
-    <p class="adult">For two adults who both want this. Either of you can soften, skip, or stop.</p>
+    <p class="lede">${SCRIPT.length} cards. Small talk first. Then the dares get explicit, and passing one costs a layer.</p>
+    <p class="adult">For two adults who both want this. End the night whenever you want. Passing a dare costs a layer.</p>
     <button type="button" class="btn btn-primary" data-action="start">Start tonight</button>
     <ol class="arc">
       <li class="act-surface"><strong>Surface</strong><span>First impressions, hobbies, and the easy questions.</span></li>
-      <li class="act-deeper"><strong>Deeper</strong><span>A little more personal. One kiss when it belongs there.</span></li>
-      <li class="act-tease"><strong>Tease</strong><span>An ice cube, then kissing through clothes.</span></li>
-      <li class="act-almost"><strong>Almost</strong><span>Touch, then a photo or one thing they ask for. Shower, a film you delete, or the phone face down.</span></li>
+      <li class="act-deeper"><strong>Deeper</strong><span>A little more personal, then a kiss that doesn't stay polite.</span></li>
+      <li class="act-tease"><strong>Tease</strong><span>Ice, mouths, and hands. Skip it and a layer comes off.</span></li>
+      <li class="act-almost"><strong>Almost</strong><span>Fingering, a faceless photo, a nude or a layer, then a shower show.</span></li>
     </ol>
     ${hiddenBlock}`;
 }
@@ -230,7 +230,11 @@ function renderPlay(animateIn = false) {
   const card = current();
   const open = state.revealed;
   const text = state.showingSofter && card.softer ? card.softer : card.text;
-  const note = state.showingSofter ? "Softer version." : card.note || "";
+  const note = state.showingSofter
+    ? card.kind === "dare"
+      ? "A layer comes off."
+      : "Softer version."
+    : card.note || "";
   const long = text.length > 170 ? " long" : "";
   const tall = text.length > 170 ? " is-tall" : "";
   const rail = ACT_ORDER.map((act) => {
@@ -249,14 +253,16 @@ function renderPlay(animateIn = false) {
       <button type="button" class="choice" data-action="choose" data-ending="film"><strong>Film, then delete</strong><span>A short record of tonight. Watch it once. Delete it together.</span></button>
       <button type="button" class="choice choice-quiet" data-action="choose" data-ending="kiss"><strong>Phone down</strong><span>Keep kissing. The first night doesn’t need a script.</span></button>`;
   } else if (open) {
-    const primary = card.kind === "dare" ? "We did it" : "Next";
+    const isDare = card.kind === "dare";
+    const showingLayer = isDare && state.showingSofter;
+    const primary = showingLayer ? "Layer's off" : isDare ? "We did it" : "Next";
     const softer = !card.softer
       ? ""
       : state.showingSofter
-        ? `<button type="button" class="btn btn-line" data-action="original">Original</button>`
-        : `<button type="button" class="btn btn-line" data-action="softer">Softer</button>`;
-    const skip = `<button type="button" class="btn btn-line" data-action="skip">Skip</button>`;
-    const pair = softer ? `<div class="btn-pair">${softer}${skip}</div>` : skip;
+        ? `<button type="button" class="btn btn-line" data-action="original">${isDare ? "Do the dare" : "Original"}</button>`
+        : `<button type="button" class="btn btn-line" data-action="softer">${isDare ? "Take off a layer" : "Softer"}</button>`;
+    const skip = isDare ? "" : `<button type="button" class="btn btn-line" data-action="skip">Skip</button>`;
+    const pair = softer && skip ? `<div class="btn-pair">${softer}${skip}</div>` : softer || skip;
     const hide = card.locked
       ? ""
       : `<button type="button" class="btn btn-ghost" data-action="hide">Not for us</button>`;

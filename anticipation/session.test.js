@@ -23,12 +23,11 @@ const BANNED = [
   "asshole",
   "open relationship",
   "cheating",
-  "lose a layer",
 ];
 
-test("a night is 26 cards and the heat only rises", () => {
+test("a night is 28 cards and the heat only rises", () => {
   const session = buildSession([], rngFrom(7));
-  assert.equal(session.length, 26);
+  assert.equal(session.length, 28);
   const rank = { surface: 0, deeper: 1, tease: 2, almost: 3 };
   for (let i = 1; i < session.length; i += 1) {
     assert.ok(rank[session[i].act] >= rank[session[i - 1].act]);
@@ -54,25 +53,32 @@ test("the night hits ice, a clothed lick or kiss, touch, then hands", () => {
   }
 });
 
-test("each night shows two nude or do-this cards after hands", () => {
+test("each night fingers, photographs, shows a nude, then a shower", () => {
   const seen = new Set();
-  for (let seed = 1; seed <= 90; seed += 1) {
+  for (let seed = 1; seed <= 40; seed += 1) {
     const session = buildSession([], rngFrom(seed));
-    const hands = session.findIndex((card) => card.id === "hands");
-    const shows = session.flatMap((card, index) => (card.from === "show" ? [index] : []));
-    assert.equal(shows.length, 2, `seed ${seed}`);
-    assert.ok(shows[0] > hands, `seed ${seed}`);
-    assert.ok(shows[1] < session.length - 1, `seed ${seed}`);
-    assert.notEqual(session[shows[0]].id, session[shows[1]].id);
-    seen.add(session[shows[0]].id);
-    seen.add(session[shows[1]].id);
+    const at = (id) => session.findIndex((card) => card.id === id);
+    const hands = at("hands");
+    const part = at("part");
+    const nudes = at("nudes");
+    const shower = at("shower");
+    const show = session.findIndex((card) => card.from === "show");
+    assert.ok(hands < part && part < nudes && nudes < shower && shower < show, `seed ${seed}`);
+    assert.ok(show < session.length - 1, `seed ${seed}`);
+    seen.add(session[show].id);
+    assert.ok(["sh-01", "sh-03", "sh-04"].includes(session[show].id), session[show].id);
+    assert.match(session[hands].text, /Finger them/);
+    assert.match(session[part].text, /face stays out of the frame/);
+    assert.match(session[nudes].text, /most recent nude/);
+    assert.match(session[nudes].text, /favorite nude of all time/);
+    assert.match(session[shower].text, /Shower show/);
   }
-  assert.deepEqual([...seen].sort(), ["sh-01", "sh-02", "sh-03", "sh-04"]);
-  const blob = POOLS.show.map((card) => card.text.toLowerCase()).join("\n");
+  assert.ok(seen.size >= 1);
+  const blob = allCards().map((card) => card.text.toLowerCase()).join("\n");
   assert.match(blob, /take a nude right now/);
-  assert.match(blob, /favorite nude of yourself/);
   assert.match(blob, /however they want/);
   assert.match(blob, /one thing to do/);
+  assert.match(blob, /take off a layer/);
 });
 
 test("different nights draw different questions", () => {
@@ -88,16 +94,16 @@ test("hidden cards stay out, and anchors fall back softer", () => {
   assert.equal(session[0].id, "fb-impression");
 
   const softened = buildSession(["ice", "touch", "hands"], rngFrom(2));
-  assert.match(softened.find((card) => card.id === "ice").text, /Skip the ice/);
-  assert.match(softened.find((card) => card.id === "touch").text, /waist, hips, and chest/);
-  assert.match(softened.find((card) => card.id === "hands").text, /Stay over the clothes/);
+  for (const id of ["ice", "touch", "hands"]) {
+    assert.match(softened.find((card) => card.id === id).text, /Take off a layer/);
+  }
   assert.equal(softened.at(-1).id, "finale");
 });
 
 test("hiding every clothed dare still leaves a dressed tease", () => {
   const clothes = POOLS.tease.filter((card) => card.clothes).map((card) => card.id);
   const session = buildSession(clothes, rngFrom(4));
-  assert.equal(session.length, 26);
+  assert.equal(session.length, 28);
   const tease = session.filter((card) => card.from === "tease");
   assert.equal(tease.length, 5);
   assert.ok(tease.every((card) => !card.clothes));

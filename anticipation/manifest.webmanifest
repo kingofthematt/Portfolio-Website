@@ -1,7 +1,7 @@
 {
   "name": "Anticipation",
   "short_name": "Anticipation",
-  "description": "A first-night card game. Small talk, then a little deeper.",
+  "description": "A first-night card game. Small talk, then dares. Pass, and a layer comes off.",
   "start_url": "./",
   "display": "standalone",
   "background_color": "#0a0e17",
