@@ -1,7 +1,7 @@
 {
   "name": "Anticipation",
   "short_name": "Anticipation",
-  "description": "A first-night card game. Notice each other, tease, and stop while you still want more.",
+  "description": "A first-night card game. Small talk, then a little deeper.",
   "start_url": "./",
   "display": "standalone",
   "background_color": "#0a0e17",

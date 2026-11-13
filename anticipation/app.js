@@ -2,7 +2,7 @@ import { ACTS, allCards } from "./cards.js";
 import { buildSession } from "./session.js";
 
 const KEY = "anticipation-hidden-v1";
-const ACT_ORDER = ["notice", "want", "tease", "almost"];
+const ACT_ORDER = ["surface", "deeper", "tease", "almost"];
 
 const ENDINGS = {
   early: {
@@ -214,14 +214,14 @@ function renderHome() {
 
   return `<p class="eyebrow">First night</p>
     <h1>Anticipation</h1>
-    <p class="lede">Twenty cards for the night you meet. Notice each other, say the thing you’ve been holding, tease through clothes, and stop while you still want more.</p>
+    <p class="lede">Twenty-six cards. Start with small talk, go a little deeper, then decide how far the night goes.</p>
     <p class="adult">For two adults who both want this. Either of you can soften, skip, or stop.</p>
     <button type="button" class="btn btn-primary" data-action="start">Start tonight</button>
     <ol class="arc">
-      <li class="act-notice"><strong>Notice</strong><span>What you clocked, what you almost said, who you think they are.</span></li>
-      <li class="act-want"><strong>Want</strong><span>Say it to someone you just met. A first kiss in the middle.</span></li>
-      <li class="act-tease"><strong>Tease</strong><span>Ice in a kiss, then hands and mouths through clothes.</span></li>
-      <li class="act-almost"><strong>Almost</strong><span>Touch, maybe skin, then two cards: a nude you show, a photo they take, or one thing they name. After that, a shower, a film you delete, or the phone face down.</span></li>
+      <li class="act-surface"><strong>Surface</strong><span>First impressions, hobbies, and the easy questions.</span></li>
+      <li class="act-deeper"><strong>Deeper</strong><span>A little more personal. One kiss when it belongs there.</span></li>
+      <li class="act-tease"><strong>Tease</strong><span>An ice cube, then kissing through clothes.</span></li>
+      <li class="act-almost"><strong>Almost</strong><span>Touch, then a photo or one thing they ask for. Shower, a film you delete, or the phone face down.</span></li>
     </ol>
     ${hiddenBlock}`;
 }

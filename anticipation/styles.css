@@ -151,8 +151,8 @@ h1 {
   line-height: 1.4;
 }
 
-.act-notice strong { color: var(--gold); }
-.act-want strong { color: var(--amber); }
+.act-surface strong { color: var(--gold); }
+.act-deeper strong { color: var(--amber); }
 .act-tease strong { color: var(--flame); }
 .act-almost strong { color: var(--rose); }
 
@@ -235,8 +235,8 @@ h1 {
   color: #6f675f;
 }
 
-.play[data-act="notice"] { --act: var(--gold); }
-.play[data-act="want"] { --act: var(--amber); }
+.play[data-act="surface"] { --act: var(--gold); }
+.play[data-act="deeper"] { --act: var(--amber); }
 .play[data-act="tease"] { --act: var(--flame); }
 .play[data-act="almost"] { --act: var(--rose); }
 

@@ -26,10 +26,10 @@ const BANNED = [
   "lose a layer",
 ];
 
-test("a night is 20 cards and the heat only rises", () => {
+test("a night is 26 cards and the heat only rises", () => {
   const session = buildSession([], rngFrom(7));
-  assert.equal(session.length, 20);
-  const rank = { notice: 0, want: 1, tease: 2, almost: 3 };
+  assert.equal(session.length, 26);
+  const rank = { surface: 0, deeper: 1, tease: 2, almost: 3 };
   for (let i = 1; i < session.length; i += 1) {
     assert.ok(rank[session[i].act] >= rank[session[i - 1].act]);
   }
@@ -56,7 +56,7 @@ test("the night hits ice, a clothed lick or kiss, touch, then hands", () => {
 
 test("each night shows two nude or do-this cards after hands", () => {
   const seen = new Set();
-  for (let seed = 1; seed <= 40; seed += 1) {
+  for (let seed = 1; seed <= 90; seed += 1) {
     const session = buildSession([], rngFrom(seed));
     const hands = session.findIndex((card) => card.id === "hands");
     const shows = session.flatMap((card, index) => (card.from === "show" ? [index] : []));
@@ -71,7 +71,7 @@ test("each night shows two nude or do-this cards after hands", () => {
   const blob = POOLS.show.map((card) => card.text.toLowerCase()).join("\n");
   assert.match(blob, /take a nude right now/);
   assert.match(blob, /favorite nude of yourself/);
-  assert.match(blob, /however they want it/);
+  assert.match(blob, /however they want/);
   assert.match(blob, /one thing to do/);
 });
 
@@ -83,9 +83,9 @@ test("different nights draw different questions", () => {
 });
 
 test("hidden cards stay out, and anchors fall back softer", () => {
-  const hidden = POOLS.thoughtful.map((card) => card.id);
+  const hidden = POOLS.impression.map((card) => card.id);
   const session = buildSession(hidden, rngFrom(2));
-  assert.equal(session[0].id, "fb-thoughtful");
+  assert.equal(session[0].id, "fb-impression");
 
   const softened = buildSession(["ice", "touch", "hands"], rngFrom(2));
   assert.match(softened.find((card) => card.id === "ice").text, /Skip the ice/);
@@ -97,26 +97,27 @@ test("hidden cards stay out, and anchors fall back softer", () => {
 test("hiding every clothed dare still leaves a dressed tease", () => {
   const clothes = POOLS.tease.filter((card) => card.clothes).map((card) => card.id);
   const session = buildSession(clothes, rngFrom(4));
-  assert.equal(session.length, 20);
+  assert.equal(session.length, 26);
   const tease = session.filter((card) => card.from === "tease");
-  assert.equal(tease.length, 4);
+  assert.equal(tease.length, 5);
   assert.ok(tease.every((card) => !card.clothes));
 });
 
 test("the deck is a first night, not a shared history", () => {
   const session = buildSession([], rngFrom(11));
-  assert.equal(session[0].act, "notice");
-  assert.equal(session[0].actName, "Notice");
+  assert.equal(session[0].act, "surface");
+  assert.equal(session[0].from, "impression");
+  assert.equal(session[0].actName, "Surface");
   const blob = allCards()
     .flatMap((card) => [card.text, card.softer, card.note])
     .filter(Boolean)
     .join("\n")
     .toLowerCase();
-  for (const phrase of ["ten years", "thanked", "fell for", "proud of me", "anniversary", "last time we"]) {
+  for (const phrase of ["ten years", "thanked", "fell for", "proud of me", "anniversary", "last time we", "stop performing", "calling the night"]) {
     assert.equal(blob.includes(phrase), false, phrase);
   }
-  const tonight = blob.match(/tonight/g) || [];
-  assert.ok(tonight.length >= 8, `expected first-night language, found ${tonight.length}`);
+  assert.match(blob, /first impression of me/);
+  assert.match(blob, /could talk about for an hour/);
 });
 
 test("the deck stays on a date, not a debate or a stunt", () => {
