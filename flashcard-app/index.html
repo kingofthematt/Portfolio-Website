@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#0d0f18">
+    <meta name="description" content="A flashcard app that repeats the cards you struggle with and retires the ones you know.">
+    <title>Flashcards</title>
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230d0f18'/%3E%3Crect x='6' y='9' width='17' height='13' rx='2.5' fill='%237c6cf6'/%3E%3Crect x='10' y='12' width='17' height='13' rx='2.5' fill='%234ad4b2'/%3E%3C/svg%3E">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="app">
+        <header class="topbar">
+            <button class="icon-btn" id="backBtn" type="button" aria-label="Go back" hidden>&#8592;</button>
+            <div class="brand">
+                <span class="brand-mark" aria-hidden="true"></span>
+                <span class="brand-name">Flashcards</span>
+            </div>
+            <button class="icon-btn" id="dataBtn" type="button" aria-label="Backup and reset options">&#9881;</button>
+        </header>
+
+        <p class="banner" id="storageWarning" hidden>
+            This browser is blocking saved data, so progress will be lost when you close the tab.
+            Turn off private browsing to keep your cards.
+        </p>
+
+        <main>
+            <!-- ---------------- Home ---------------- -->
+            <section class="screen is-active" id="screen-home">
+                <div class="hero">
+                    <h1>Study what you don't know yet</h1>
+                    <p>
+                        Cards you mark <strong>Need to learn more</strong> come back more often.
+                        Cards you mark <strong>Already know</strong> are retired and stay out of the
+                        rotation. Everything saves automatically on this device.
+                    </p>
+                </div>
+
+                <div class="stat-row" id="homeStats"></div>
+
+                <button class="btn btn-primary" id="studyAllBtn" type="button">Study all categories</button>
+
+                <div class="section-head">
+                    <h2>Categories</h2>
+                    <button class="btn btn-ghost btn-sm" id="newCategoryBtn" type="button">+ New category</button>
+                </div>
+
+                <div class="list" id="categoryList"></div>
+
+                <div class="empty" id="homeEmpty" hidden>
+                    <h3>No cards yet</h3>
+                    <p>Make a category, then start typing in your own flashcards.</p>
+                    <button class="btn btn-primary" id="emptyNewCategoryBtn" type="button">Create a category</button>
+                    <button class="btn btn-ghost" id="sampleDeckBtn" type="button">Load a sample deck instead</button>
+                </div>
+            </section>
+
+            <!-- ---------------- Study ---------------- -->
+            <section class="screen" id="screen-study">
+                <div class="study-head">
+                    <h2 class="study-title" id="studyTitle"></h2>
+                    <div class="chips" id="studyChips"></div>
+                    <div class="progress" role="img" aria-label="Category progress">
+                        <div class="progress-fill" id="studyProgress"></div>
+                    </div>
+                </div>
+
+                <div id="studyStage">
+                    <div class="flashcard" id="flashcard" role="button" tabindex="0" aria-label="Flashcard, activate to reveal the answer">
+                        <div class="flashcard-inner">
+                            <div class="face face-front">
+                                <span class="face-label">Question</span>
+                                <div class="face-text" id="cardFront"></div>
+                                <span class="face-hint">Tap to reveal</span>
+                            </div>
+                            <div class="face face-back">
+                                <span class="face-label">Answer</span>
+                                <div class="face-text" id="cardBack"></div>
+                                <span class="face-hint" id="cardMeta"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button class="btn btn-primary" id="revealBtn" type="button">Show answer</button>
+
+                    <div class="grade-row" id="gradeRow" hidden>
+                        <button class="btn btn-learn" id="learnBtn" type="button">
+                            Need to learn more
+                            <small>Shows up again, more often</small>
+                        </button>
+                        <button class="btn btn-know" id="knowBtn" type="button">
+                            Already know
+                            <small>Retired from the rotation</small>
+                        </button>
+                    </div>
+
+                    <div class="study-tools">
+                        <button class="btn btn-ghost btn-sm" id="undoBtn" type="button" disabled>Undo last answer</button>
+                        <button class="btn btn-ghost btn-sm" id="editCurrentBtn" type="button">Edit this card</button>
+                    </div>
+
+                    <p class="hint-line">Keyboard: space reveals, 1 = need to learn more, 2 = already know.</p>
+                </div>
+
+                <div class="done" id="studyDone" hidden>
+                    <h3 id="doneTitle">Nothing left to review</h3>
+                    <p id="doneText"></p>
+                    <button class="btn btn-primary" id="doneResetBtn" type="button">Bring retired cards back</button>
+                    <button class="btn btn-ghost" id="doneHomeBtn" type="button">Back to categories</button>
+                </div>
+            </section>
+
+            <!-- ---------------- Cards in a category ---------------- -->
+            <section class="screen" id="screen-cards">
+                <div class="section-head">
+                    <h2 id="cardsTitle">Cards</h2>
+                    <button class="btn btn-ghost btn-sm" id="renameCategoryBtn" type="button">Rename</button>
+                </div>
+
+                <div class="stat-row" id="cardsStats"></div>
+
+                <div class="button-row">
+                    <button class="btn btn-primary" id="addCardBtn" type="button">+ Add card</button>
+                    <button class="btn btn-ghost" id="bulkAddBtn" type="button">Paste a list</button>
+                </div>
+
+                <button class="btn btn-know" id="studyThisBtn" type="button">Study this category</button>
+
+                <input class="search" id="cardSearch" type="search" placeholder="Search these cards" autocomplete="off">
+
+                <div class="chips chips-filter" id="cardFilters">
+                    <button class="chip is-active" type="button" data-filter="all">All</button>
+                    <button class="chip" type="button" data-filter="learning">Learning</button>
+                    <button class="chip" type="button" data-filter="new">Not seen</button>
+                    <button class="chip" type="button" data-filter="known">Retired</button>
+                </div>
+
+                <div class="list" id="cardList"></div>
+
+                <div class="danger-zone">
+                    <h3>Category tools</h3>
+                    <button class="btn btn-ghost btn-sm" id="resetCategoryBtn" type="button">Reset progress for this category</button>
+                    <button class="btn btn-ghost btn-sm btn-danger" id="deleteCategoryBtn" type="button">Delete this category</button>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <div class="sheet-backdrop" id="sheetBackdrop" hidden></div>
+
+    <!-- Card editor -->
+    <div class="sheet" id="cardSheet" role="dialog" aria-modal="true" aria-labelledby="cardSheetTitle" hidden>
+        <div class="sheet-grip" aria-hidden="true"></div>
+        <h2 class="sheet-title" id="cardSheetTitle">New card</h2>
+        <label class="field">
+            <span>Front (the question or prompt)</span>
+            <textarea id="cardFrontInput" rows="3" placeholder="What does CIA stand for in security?"></textarea>
+        </label>
+        <label class="field">
+            <span>Back (the answer)</span>
+            <textarea id="cardBackInput" rows="3" placeholder="Confidentiality, Integrity, Availability"></textarea>
+        </label>
+        <label class="field">
+            <span>Category</span>
+            <select id="cardCategoryInput"></select>
+        </label>
+        <p class="sheet-error" id="cardSheetError" hidden></p>
+        <div class="button-row">
+            <button class="btn btn-ghost" id="cardCancelBtn" type="button">Cancel</button>
+            <button class="btn btn-primary" id="cardSaveBtn" type="button">Save card</button>
+        </div>
+        <button class="btn btn-ghost btn-sm btn-danger" id="cardDeleteBtn" type="button" hidden>Delete this card</button>
+    </div>
+
+    <!-- Category editor -->
+    <div class="sheet" id="categorySheet" role="dialog" aria-modal="true" aria-labelledby="categorySheetTitle" hidden>
+        <div class="sheet-grip" aria-hidden="true"></div>
+        <h2 class="sheet-title" id="categorySheetTitle">New category</h2>
+        <label class="field">
+            <span>Category name</span>
+            <input id="categoryNameInput" type="text" placeholder="Security+ acronyms" autocomplete="off">
+        </label>
+        <p class="sheet-error" id="categorySheetError" hidden></p>
+        <div class="button-row">
+            <button class="btn btn-ghost" id="categoryCancelBtn" type="button">Cancel</button>
+            <button class="btn btn-primary" id="categorySaveBtn" type="button">Save</button>
+        </div>
+    </div>
+
+    <!-- Bulk add -->
+    <div class="sheet" id="bulkSheet" role="dialog" aria-modal="true" aria-labelledby="bulkSheetTitle" hidden>
+        <div class="sheet-grip" aria-hidden="true"></div>
+        <h2 class="sheet-title" id="bulkSheetTitle">Paste a list of cards</h2>
+        <p class="sheet-note">
+            One card per line, with the front and back separated by <code>|</code>,
+            a tab, or <code>--</code>. Example: <code>Phishing | Fake message that baits credentials</code>
+        </p>
+        <label class="field">
+            <span>Cards</span>
+            <textarea id="bulkInput" rows="8" placeholder="Phishing | Fake message that baits credentials&#10;Vishing | Phishing over a voice call"></textarea>
+        </label>
+        <p class="sheet-error" id="bulkSheetError" hidden></p>
+        <div class="button-row">
+            <button class="btn btn-ghost" id="bulkCancelBtn" type="button">Cancel</button>
+            <button class="btn btn-primary" id="bulkSaveBtn" type="button">Add cards</button>
+        </div>
+    </div>
+
+    <!-- Backup / reset -->
+    <div class="sheet" id="dataSheet" role="dialog" aria-modal="true" aria-labelledby="dataSheetTitle" hidden>
+        <div class="sheet-grip" aria-hidden="true"></div>
+        <h2 class="sheet-title" id="dataSheetTitle">Backup &amp; reset</h2>
+        <p class="sheet-note">
+            Cards and progress live in this browser only. Export a backup file to move them to
+            another device or browser.
+        </p>
+        <button class="btn btn-ghost" id="exportBtn" type="button">Export backup file</button>
+        <button class="btn btn-ghost" id="importBtn" type="button">Import backup file</button>
+        <input id="importFile" type="file" accept="application/json,.json" hidden>
+        <div class="danger-zone">
+            <h3>Start over</h3>
+            <button class="btn btn-ghost btn-sm" id="resetAllProgressBtn" type="button">Reset progress, keep all cards</button>
+            <button class="btn btn-ghost btn-sm btn-danger" id="wipeBtn" type="button">Delete everything</button>
+        </div>
+        <button class="btn btn-ghost" id="dataCloseBtn" type="button">Close</button>
+    </div>
+
+    <!-- Confirm -->
+    <div class="sheet" id="confirmSheet" role="dialog" aria-modal="true" aria-labelledby="confirmTitle" hidden>
+        <div class="sheet-grip" aria-hidden="true"></div>
+        <h2 class="sheet-title" id="confirmTitle">Are you sure?</h2>
+        <p class="sheet-note" id="confirmText"></p>
+        <div class="button-row">
+            <button class="btn btn-ghost" id="confirmCancelBtn" type="button">Cancel</button>
+            <button class="btn btn-primary" id="confirmOkBtn" type="button">Confirm</button>
+        </div>
+    </div>
+
+    <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+
+    <script src="app.js"></script>
+</body>
+</html>
