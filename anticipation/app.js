@@ -276,7 +276,7 @@ function renderHome() {
     <button type="button" class="btn btn-line deck-link" data-action="deck">The deck</button>
     ${cutNote}
     <ol class="arc">
-      <li class="act-surface"><strong>Surface</strong><span>First impressions, hobbies, easy questions. Eight, then the next stage.</span></li>
+      <li class="act-surface"><strong>Surface</strong><span>First impressions, and what you've already noticed. Eight, then the next stage.</span></li>
       <li class="act-deeper"><strong>Deeper</strong><span>More personal, then a kiss that doesn't stay polite.</span></li>
       <li class="act-tease"><strong>Tease</strong><span>Ice, a question you wouldn't usually ask, mouths and hands.</span></li>
       <li class="act-almost"><strong>Almost</strong><span>Fingering, a faceless photo, a nude or a layer, a shower show.</span></li>

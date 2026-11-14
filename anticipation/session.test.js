@@ -78,4 +78,17 @@ test("the deck stays on a date, not a debate", () => {
     .toLowerCase();
   for (const word of BANNED) assert.equal(blob.includes(word), false, word);
   assert.equal(blob.includes("first impression of me"), true);
+  const dropped = [
+    "taught yourself",
+    "best trip",
+    "on repeat",
+    "when you were a kid",
+    "two minutes",
+    "thirty seconds",
+    "undo one button",
+    "most like yourself",
+    "get wrong about you",
+    "would you rather",
+  ];
+  for (const phrase of dropped) assert.equal(blob.includes(phrase), false, phrase);
 });
