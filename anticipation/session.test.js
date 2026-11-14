@@ -20,14 +20,13 @@ const BANNED = [
   "pickleball",
   "thermostat",
   "deepthroat",
-  "asshole",
   "open relationship",
   "cheating",
 ];
 
 test("each stage has a deep pile and a night only deals eight", () => {
   for (const [name, pool] of Object.entries(POOLS)) {
-    assert.ok(pool.length >= 15 && pool.length <= 20, `${name} has ${pool.length}`);
+    assert.ok(pool.length >= 15 && pool.length <= 25, `${name} has ${pool.length}`);
   }
   const session = buildSession([], rngFrom(7));
   assert.equal(session.length, DRAW * 4 + 1);
@@ -64,7 +63,11 @@ test("the daring stage keeps the lines that were asked for", () => {
   assert.match(blob, /Ask 1 sexual question you wouldn't normally ask by now/);
   assert.match(blob, /What's the first thing you thought when we first met/);
   assert.ok(POOLS.tease.some((card) => card.softer && /Take off a layer/.test(card.softer)));
-  assert.match(POOLS.almost.map((card) => card.text).join("\n"), /Finger them/);
+  const almost = POOLS.almost.map((card) => card.text).join("\n");
+  assert.match(almost, /Finger them/);
+  assert.match(almost, /Finger their asshole/);
+  assert.match(almost, /head for five minutes/);
+  assert.match(almost, /Eat their ass/);
 });
 
 test("the deck stays on a date, not a debate", () => {
