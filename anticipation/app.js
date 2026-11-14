@@ -1,7 +1,9 @@
-import { ACTS, DRAW, allCards } from "./cards.js";
+import { ACTS, DRAW, POOLS, allCards } from "./cards.js";
+import { cutCard, cutIds, normalize } from "./deck.js";
 import { buildSession } from "./session.js";
 
-const KEY = "anticipation-hidden-v1";
+const KEY = "anticipation-deleted-v1";
+const OLD_KEY = "anticipation-hidden-v1";
 const ACT_ORDER = ["surface", "deeper", "tease", "almost"];
 
 const ENDINGS = {
@@ -31,7 +33,8 @@ const state = {
   showingSofter: false,
   ending: null,
   gate: null,
-  removed: loadRemoved(),
+  cut: loadCut(),
+  confirmId: null,
 };
 
 let gateTimer = 0;
@@ -55,7 +58,25 @@ document.addEventListener("click", (event) => {
     render();
   }
   if (action === "skip") advance();
-  if (action === "hide") hideCurrent();
+  if (action === "hide") {
+    const card = current();
+    if (!card) return;
+    if (state.confirmId === card.id) deleteById(card.id);
+    else {
+      state.confirmId = card.id;
+      render();
+    }
+  }
+  if (action === "deck") openDeck();
+  if (action === "ask-delete") {
+    state.confirmId = target.dataset.id || null;
+    render();
+  }
+  if (action === "cancel-delete") {
+    state.confirmId = null;
+    render();
+  }
+  if (action === "confirm-delete") deleteById(target.dataset.id);
   if (action === "end") {
     dismissGate();
     state.ending = "early";
@@ -78,12 +99,7 @@ document.addEventListener("click", (event) => {
     state.screen = "home";
     state.session = [];
     state.ending = null;
-    render();
-  }
-  if (action === "restore") restore(target.dataset.id);
-  if (action === "restore-all") {
-    state.removed = new Set();
-    saveRemoved();
+    state.confirmId = null;
     render();
   }
 });
@@ -101,7 +117,8 @@ render();
 
 function start() {
   dismissGate();
-  state.session = buildSession([...state.removed]);
+  state.session = buildSession(cutIds(state.cut));
+  state.confirmId = null;
   state.index = 0;
   state.revealed = false;
   state.showingSofter = false;
@@ -118,6 +135,7 @@ function reveal() {
 }
 
 function advance() {
+  state.confirmId = null;
   if (state.gate) return;
   if (state.index >= state.session.length - 1) return;
   const previous = current().act;
@@ -146,50 +164,69 @@ function dismissGate() {
   render();
 }
 
-function hideCurrent() {
-  const card = current();
-  if (!card || card.locked || card.kind === "finale") return;
-  state.removed.add(card.id);
-  saveRemoved();
-  if (card.anchor && card.softer && !card.softened) {
-    card.text = card.softer;
-    card.softer = null;
-    card.softened = true;
-    card.note = "The version you kept.";
-    state.showingSofter = false;
-    render();
-    return;
-  }
-  if (state.index >= state.session.length - 1) {
-    state.ending = "kiss";
-    state.screen = "end";
-    render();
-    return;
-  }
-  advance();
+function openDeck() {
+  dismissGate();
+  state.screen = "deck";
+  state.confirmId = null;
+  render();
 }
 
-function restore(id) {
-  state.removed.delete(id);
-  saveRemoved();
+function deleteById(id) {
+  const card = findCard(id);
+  if (!card) return false;
+  const next = cutCard(state.cut, card, new Date().toISOString());
+  if (next === state.cut) return false;
+  state.cut = next;
+  state.confirmId = null;
+  saveCut();
+  pullFromSession(id);
+  if (state.screen === "play" && state.session.length === 0) {
+    state.screen = "deck";
+  }
   render();
+  return true;
+}
+
+function pullFromSession(id) {
+  const index = state.session.findIndex((card) => card.id === id);
+  if (index === -1) return;
+  const wasCurrent = index === state.index;
+  state.session.splice(index, 1);
+  if (state.index > index) state.index -= 1;
+  if (state.index >= state.session.length) state.index = Math.max(0, state.session.length - 1);
+  if (wasCurrent) {
+    state.revealed = false;
+    state.showingSofter = false;
+  }
+}
+
+function findCard(id) {
+  if (!id) return null;
+  for (const act of ACT_ORDER) {
+    const card = POOLS[act].find((item) => item.id === id);
+    if (card) return { ...card, act };
+  }
+  return state.session.find((card) => card.id === id) || allCards().find((card) => card.id === id) || null;
 }
 
 function current() {
   return state.session[state.index];
 }
 
-function loadRemoved() {
+function loadCut() {
   try {
-    const raw = JSON.parse(localStorage.getItem(KEY) || "[]");
-    return new Set(Array.isArray(raw) ? raw.filter((id) => typeof id === "string") : []);
+    const saved = localStorage.getItem(KEY);
+    if (saved) return normalize(JSON.parse(saved));
+    const older = normalize(JSON.parse(localStorage.getItem(OLD_KEY) || "[]"));
+    if (older.length) localStorage.setItem(KEY, JSON.stringify(older));
+    return older;
   } catch {
-    return new Set();
+    return [];
   }
 }
 
-function saveRemoved() {
-  localStorage.setItem(KEY, JSON.stringify([...state.removed]));
+function saveCut() {
+  localStorage.setItem(KEY, JSON.stringify(state.cut));
 }
 
 function esc(value) {
@@ -205,7 +242,14 @@ function esc(value) {
 function render() {
   const animateIn = state.animateIn;
   state.animateIn = false;
-  const view = state.screen === "play" ? renderPlay(animateIn) : state.screen === "end" ? renderEnd() : renderHome();
+  const view =
+    state.screen === "play"
+      ? renderPlay(animateIn)
+      : state.screen === "end"
+        ? renderEnd()
+        : state.screen === "deck"
+          ? renderDeck()
+          : renderHome();
   if (document.activeElement instanceof HTMLElement) document.activeElement.blur();
   app.innerHTML = `<main class="shell">${view}</main>`;
   const snapTop = () => {
@@ -223,35 +267,20 @@ function render() {
 }
 
 function renderHome() {
-  const hidden = [...state.removed]
-    .map((id) => allCards().find((card) => card.id === id))
-    .filter(Boolean);
-  const hiddenBlock = hidden.length
-    ? `<details class="hidden-panel">
-        <summary>Hidden cards (${hidden.length})</summary>
-        <ul class="hidden-list">
-          ${hidden
-            .map(
-              (card) => `<li><span>${esc(card.text)}</span><button type="button" data-action="restore" data-id="${esc(card.id)}">Bring back</button></li>`,
-            )
-            .join("")}
-        </ul>
-        <button type="button" class="btn btn-ghost" data-action="restore-all">Bring them all back</button>
-      </details>`
-    : "";
-
+  const cutNote = state.cut.length ? `<p class="cut-count">${state.cut.length} cut from the deck.</p>` : "";
   return `<p class="eyebrow">First night</p>
     <h1>Anticipation</h1>
     <p class="lede">${DRAW} cards a stage, drawn from a bigger pile. Then it moves on.</p>
     <p class="adult">For two adults who both want this. End the night whenever you want. Passing a dare costs a layer.</p>
     <button type="button" class="btn btn-primary" data-action="start">Start tonight</button>
+    <button type="button" class="btn btn-line deck-link" data-action="deck">The deck</button>
+    ${cutNote}
     <ol class="arc">
       <li class="act-surface"><strong>Surface</strong><span>First impressions, hobbies, easy questions. Eight, then the next stage.</span></li>
       <li class="act-deeper"><strong>Deeper</strong><span>More personal, then a kiss that doesn't stay polite.</span></li>
       <li class="act-tease"><strong>Tease</strong><span>Ice, a question you wouldn't usually ask, mouths and hands.</span></li>
       <li class="act-almost"><strong>Almost</strong><span>Fingering, a faceless photo, a nude or a layer, a shower show.</span></li>
-    </ol>
-    ${hiddenBlock}`;
+    </ol>`;
 }
 
 function renderPlay(animateIn = false) {
@@ -293,7 +322,7 @@ function renderPlay(animateIn = false) {
     const pair = softer && skip ? `<div class="btn-pair">${softer}${skip}</div>` : softer || skip;
     const hide = card.locked
       ? ""
-      : `<button type="button" class="btn btn-ghost" data-action="hide">Not for us</button>`;
+      : `<button type="button" class="btn btn-ghost" data-action="hide">${state.confirmId === card.id ? "Delete forever" : "Delete from deck"}</button>`;
     actions = `<button type="button" class="btn btn-primary" data-action="next">${primary}</button>
       ${pair}
       ${hide}`;
@@ -323,6 +352,74 @@ function renderPlay(animateIn = false) {
     <div class="play-actions">${actions}</div>
     ${state.gate ? renderGate(state.gate) : ""}
   </section>`;
+}
+
+function renderDeck() {
+  const gone = new Set(cutIds(state.cut));
+  const stages = ACT_ORDER.map((act) => {
+    const cards = POOLS[act].filter((card) => !gone.has(card.id));
+    const rows = cards
+      .map((card) => {
+        if (state.confirmId === card.id) {
+          return `<li class="deck-row is-confirm">
+            <span>${esc(card.text)}</span>
+            <span class="confirm-actions">
+              <button type="button" class="btn btn-line danger" data-action="confirm-delete" data-id="${esc(card.id)}">Delete forever</button>
+              <button type="button" class="btn btn-ghost" data-action="cancel-delete">Keep it</button>
+            </span>
+          </li>`;
+        }
+        return `<li class="deck-row">
+          <span>${esc(card.text)}</span>
+          <button type="button" class="btn btn-ghost" data-action="ask-delete" data-id="${esc(card.id)}">Delete</button>
+        </li>`;
+      })
+      .join("");
+    return `<section class="deck-stage">
+      <h2 class="act-${esc(act)}">${esc(ACTS[act].name)}</h2>
+      <ul class="deck-list">${rows || `<li class="deck-empty">Nothing left in this stage.</li>`}</ul>
+    </section>`;
+  }).join("");
+  const cutRows = [...state.cut]
+    .slice()
+    .reverse()
+    .map((record) => {
+      const text = record.text || findCard(record.id)?.text || record.id;
+      const when = record.at ? formatWhen(record.at) : "Earlier";
+      const act = ACTS[record.act]?.name || "";
+      return `<li><span>${esc(text)}</span><small>${esc(act)} · ${esc(when)}</small></li>`;
+    })
+    .join("");
+  const cutBlock = state.cut.length
+    ? `<section class="deck-stage cut-stage">
+        <h2>Cut</h2>
+        <p class="adult">These are gone. The wording stays here so you can see which cards missed.</p>
+        <ul class="cut-list">${cutRows}</ul>
+      </section>`
+    : "";
+  return `<section class="deck">
+    <div class="play-top">
+      <p class="eyebrow">The deck</p>
+      <button type="button" class="btn btn-ghost" data-action="home">Back</button>
+    </div>
+    <h1>Delete a card</h1>
+    <p class="lede">It leaves the deal on this phone and does not come back.</p>
+    ${stages}
+    ${cutBlock}
+  </section>`;
+}
+
+function formatWhen(iso) {
+  const when = new Date(iso);
+  if (Number.isNaN(when.getTime())) return "Earlier";
+  const clock = new Intl.DateTimeFormat("en-US", {
+    timeZone: "America/Los_Angeles",
+    month: "short",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+  }).format(when);
+  return `${clock} PT`;
 }
 
 function renderGate(act) {

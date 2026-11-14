@@ -248,6 +248,74 @@ h1 {
 .act-tease strong { color: var(--flame); }
 .act-almost strong { color: var(--rose); }
 
+.deck-link { margin-top: 10px; }
+
+.cut-count {
+  margin: 8px 0 0;
+  color: var(--muted);
+  font-size: 0.92rem;
+}
+
+.deck h1 { margin-bottom: 8px; }
+
+.deck-stage { margin-top: 28px; }
+
+.deck-stage h2 {
+  margin: 0 0 10px;
+  font-size: 0.78rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.deck-list, .cut-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.deck-row, .cut-list li {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: flex-start;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--line);
+}
+
+.deck-row span, .cut-list span {
+  line-height: 1.4;
+}
+
+.deck-row .btn, .confirm-actions .btn {
+  width: auto;
+  flex: 0 0 auto;
+  min-height: 40px;
+  padding: 8px 12px;
+}
+
+.confirm-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  align-items: flex-end;
+}
+
+.danger { color: var(--flame); border-color: var(--flame); }
+
+.deck-empty, .cut-list small {
+  color: var(--muted);
+}
+
+.cut-list li {
+  flex-direction: column;
+  gap: 4px;
+}
+
+.cut-stage h2 { color: var(--rose); }
+
 .hidden-panel {
   margin-top: 28px;
   border-top: 1px solid var(--line);
